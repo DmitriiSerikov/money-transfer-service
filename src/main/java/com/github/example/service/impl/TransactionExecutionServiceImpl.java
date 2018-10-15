@@ -69,7 +69,7 @@ public class TransactionExecutionServiceImpl implements TransactionExecutionServ
             LOGGER.info("Execution of the transaction with id:{} will be delayed due to the lock of one of the accounts", transactionId, ex);
         } catch (Exception ex) {
             LOGGER.error("Failed to execute transaction with id:{} between accounts with source id:{} and target id:{}", transactionId, sourceAccountId, targetAccountId, ex);
-            transactionDao.update(transaction.failed());
+            transactionDao.update(transaction.failed(ex.getMessage()));
         } finally {
             accountDao.unlockBy(sourceAccountId);
             accountDao.unlockBy(targetAccountId);

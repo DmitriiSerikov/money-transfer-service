@@ -89,7 +89,7 @@ class InMemoryTransactionDaoSpec extends Specification {
     @Test
     def "should return collection of pending transactions when storage contains transactions with different statuses"() {
         given:
-        def failedTransaction = new Transaction(10, 20, ONE).failed()
+        def failedTransaction = new Transaction(10, 20, ONE).failed("Failed")
         def executedTransaction = new Transaction(10, 20, ONE).executed()
         and:
         inMemoryTransactionDao.insert failedTransaction

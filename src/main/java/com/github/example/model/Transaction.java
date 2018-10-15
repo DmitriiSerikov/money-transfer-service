@@ -22,6 +22,7 @@ public final class Transaction {
     private final long targetAccountId;
     private final BigDecimal amount;
     private final TransactionStatus status;
+    private final String errorMessage;
 
     public Transaction(final long sourceAccountId, final long targetAccountId, final BigDecimal amount) {
         Assert.notNull(amount, "Transaction amount");
@@ -33,15 +34,17 @@ public final class Transaction {
         this.id = SEQUENCE.incrementAndGet();
         this.creationTime = Instant.now();
         this.status = TransactionStatus.PENDING;
+        this.errorMessage = null;
         this.sourceAccountId = sourceAccountId;
         this.targetAccountId = targetAccountId;
         this.amount = amount;
     }
 
-    private Transaction(final Transaction transaction, final TransactionStatus changedStatus) {
+    private Transaction(final Transaction transaction, final TransactionStatus changedStatus, final String errorMessage) {
         this.id = transaction.id;
         this.creationTime = transaction.creationTime;
         this.status = changedStatus;
+        this.errorMessage = errorMessage;
         this.sourceAccountId = transaction.sourceAccountId;
         this.targetAccountId = transaction.targetAccountId;
         this.amount = transaction.amount;
@@ -71,12 +74,16 @@ public final class Transaction {
         return status;
     }
 
-    public Transaction executed() {
-        return new Transaction(this, TransactionStatus.SUCCESS);
+    public String getErrorMessage() {
+        return errorMessage;
     }
 
-    public Transaction failed() {
-        return new Transaction(this, TransactionStatus.FAILED);
+    public Transaction executed() {
+        return new Transaction(this, TransactionStatus.SUCCESS, this.errorMessage);
+    }
+
+    public Transaction failed(final String errorMessage) {
+        return new Transaction(this, TransactionStatus.FAILED, errorMessage);
     }
 
     public enum TransactionStatus {

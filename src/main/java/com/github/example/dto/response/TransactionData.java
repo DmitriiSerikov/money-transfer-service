@@ -11,6 +11,7 @@ public class TransactionData implements Serializable {
     private long targetAccountId;
     private BigDecimal amount;
     private String status;
+    private String errorMessage;
 
     public long getId() {
         return id;
@@ -50,5 +51,13 @@ public class TransactionData implements Serializable {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 }
