@@ -60,6 +60,12 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.modelmapper</groupId>
+            <artifactId>modelmapper</artifactId>
+            <version>0.7.4</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>1.2.3</version>
@@ -69,6 +75,18 @@
             <groupId>org.spockframework</groupId>
             <artifactId>spock-core</artifactId>
             <version>1.2-groovy-2.4</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.codehaus.groovy</groupId>
+                    <artifactId>groovy-all</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.blogspot.toomuchcoding</groupId>
+            <artifactId>spock-subjects-collaborators-extension</artifactId>
+            <version>1.2.1</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
