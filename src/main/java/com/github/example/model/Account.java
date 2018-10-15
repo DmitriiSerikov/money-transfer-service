@@ -15,7 +15,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * The class {@code Account} includes methods for deposit and withdraw money from account balance.
  */
 public final class Account {
-
     private static final AtomicLong SEQUENCE = new AtomicLong(0);
 
     private final long id;

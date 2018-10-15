@@ -1,4 +1,4 @@
-package com.github.example.controllers
+package com.github.example.controller
 
 import io.micronaut.context.ApplicationContext
 import io.micronaut.http.HttpResponse
@@ -10,7 +10,7 @@ import spock.lang.AutoCleanup
 import spock.lang.Shared
 import spock.lang.Specification
 
-class AccountsControllerSpec extends Specification {
+class AccountControllerSpec extends Specification {
 
     @Shared
     @AutoCleanup

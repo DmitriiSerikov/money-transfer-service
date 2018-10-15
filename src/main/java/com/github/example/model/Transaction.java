@@ -14,7 +14,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * The class {@code Transaction} includes methods for changing status of transaction according to {@link TransactionStatus} values.
  */
 public final class Transaction {
-
     private static final AtomicLong SEQUENCE = new AtomicLong(0);
 
     private final long id;
