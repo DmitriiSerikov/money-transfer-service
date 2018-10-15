@@ -4,6 +4,20 @@ language: java
 jdk:
   - openjdk8
 
+addons:
+  sonarcloud:
+    organization: 'dmitriiserikov-github'
+    token:
+      secure: 'gxbnBjx23/0PpVT/xZfQiDzRFmQqw3OZyRx9ytlHugnn8sKOxeZajUV0FSGkdl5X8w9SrAPVKxei00ZYsn79Ymb+2qo6kYkKhpl4g7+E2NF+TgH2IaRbdld00LNvBWIhsdOyXzQlgyTWcFoZH4YqKJrlhOMQ8zh3GuW5N3fGORCPZ0kOJOYvNwabiRRfadLlr36eFJvFcqnFRQ6Mma11qsR0THr2e/pUgm2lPclpYtRO1+luwRkUvaZ2/IicTMqFyitH8/9AFm3W+zNHvpK6aPPv0ESmI2n4xVaKEsdwm1Wigqvr/TjCRJDJBdEmdW6IlvfXBpKYct980SEERkK03eAROElh5aAedwBbVEh8F4cRfOYpG0ZNqbsKfuRLRz1JSgoQcCJbMHr1Xq5ZiNYAr4dUXS4B3K6lhrX9O6JaLte4zVn+0/nNsoB8LVCiMx7lU1ruYIq1cMRfWXgYOj9MYpe8YGOJg7Jo9EOSirD1G7BqjEOYHYetp3UHFjRUQMX5NRZWH8GixNHWJivL//FfdC8zDvW7g8OsGpPuSENYKduqzVnHX0ViD7qJRGG2S+vc4VIhIrIu27D9DYaFMB5dYiODygPZCwZJRnrZGjKFDxHhW7jEZFk97jPqrRbZ4IjFmrfNgxVTbKDL3PEC//onXb9IWQbIvUQm+nskrw2XSo4='
+
+script:
+  - ./mvnw clean install -B
+  - ./mvnw clean jacoco:prepare-agent package sonar:sonar
+
+after_success:
+  - ./mvnw clean test jacoco:report coveralls:report
+
 cache:
- directories:
-   - $HOME/.m2
+  directories:
+    - '$HOME/.m2/repository'
+    - '$HOME/.sonar/cache'
