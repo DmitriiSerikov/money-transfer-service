@@ -117,9 +117,6 @@
                         </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <createDependencyReducedPom>false</createDependencyReducedPom>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -137,41 +134,30 @@
                 </configuration>
             </plugin>
             <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.7.0</version>
-                <configuration>
-                    <compilerId>groovy-eclipse-compiler</compilerId>
-                </configuration>
+                <groupId>org.codehaus.gmavenplus</groupId>
+                <artifactId>gmavenplus-plugin</artifactId>
+                <version>1.6.1</version>
                 <executions>
                     <execution>
-                        <id>test-compile</id>
-                        <phase>process-test-sources</phase>
                         <goals>
-                            <goal>testCompile</goal>
+                            <goal>addTestSources</goal>
+                            <goal>addSources</goal>
+                            <goal>compileTests</goal>
+                            <goal>compile</goal>
                         </goals>
-                        <configuration>
-                            <compilerId>groovy-eclipse-compiler</compilerId>
-                        </configuration>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.codehaus.groovy</groupId>
-                        <artifactId>groovy-eclipse-compiler</artifactId>
-                        <version>2.9.3-01</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.codehaus.groovy</groupId>
-                        <artifactId>groovy-eclipse-batch</artifactId>
-                        <version>2.5.1-01</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.groovy</groupId>
-                <artifactId>groovy-eclipse-compiler</artifactId>
-                <version>2.9.3-01</version>
-                <extensions>true</extensions>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.21.0</version>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.*</include>
+                        <include>**/*Spec.*</include>
+                    </includes>
+                </configuration>
             </plugin>
         </plugins>
         <pluginManagement>
@@ -195,6 +181,11 @@
                             <path>
                                 <groupId>io.micronaut</groupId>
                                 <artifactId>validation</artifactId>
+                                <version>${micronaut.version}</version>
+                            </path>
+                            <path>
+                                <groupId>io.micronaut</groupId>
+                                <artifactId>inject-groovy</artifactId>
                                 <version>${micronaut.version}</version>
                             </path>
                         </annotationProcessorPaths>
