@@ -65,7 +65,7 @@ class TransactionControllerSpec extends Specification {
     @Test
     def "should return error with 400 status code when trying to create transaction for source account that not exists"() {
         given:
-        def sourceAccountId = 10
+        def sourceAccountId = -10
 
         when:
         createTransaction sourceAccountId, targetAccountId, 10
@@ -73,13 +73,13 @@ class TransactionControllerSpec extends Specification {
         then:
         def ex = thrown HttpClientResponseException
         ex.status == HttpStatus.BAD_REQUEST
-        ex.message == "Account not exists for id:10"
+        ex.message == "Account not exists for id:-10"
     }
 
     @Test
     def "should return error with 400 status code when trying to create transaction for target account that not exists"() {
         given:
-        def targetAccountId = 10
+        def targetAccountId = -10
 
         when:
         createTransaction sourceAccountId, targetAccountId, 10
@@ -87,7 +87,7 @@ class TransactionControllerSpec extends Specification {
         then:
         def ex = thrown HttpClientResponseException
         ex.status == HttpStatus.BAD_REQUEST
-        ex.message == "Account not exists for id:10"
+        ex.message == "Account not exists for id:-10"
     }
 
     @Test
