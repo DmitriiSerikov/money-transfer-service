@@ -10,6 +10,7 @@
         <micronaut.version>1.0.0.RC2</micronaut.version>
         <jdk.version>1.8</jdk.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <sonar.exclusions>**/*Data.java</sonar.exclusions>
     </properties>
     <repositories>
         <repository>
@@ -172,9 +173,9 @@
                 <version>2.21.0</version>
                 <configuration>
                     <includes>
-                        <include>**/*Test.*</include>
                         <include>**/*Spec.*</include>
                     </includes>
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
                 </configuration>
             </plugin>
             <plugin>
@@ -189,11 +190,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.eluder.coveralls</groupId>
-                <artifactId>coveralls-maven-plugin</artifactId>
-                <version>4.3.0</version>
             </plugin>
         </plugins>
         <pluginManagement>

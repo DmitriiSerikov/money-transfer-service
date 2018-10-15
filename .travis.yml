@@ -14,9 +14,6 @@ script:
   - ./mvnw clean install -B
   - ./mvnw clean jacoco:prepare-agent package sonar:sonar
 
-after_success:
-  - ./mvnw clean test jacoco:report coveralls:report
-
 cache:
   directories:
     - '$HOME/.m2/repository'
