@@ -1,17 +1,52 @@
 package com.github.example.controller;
 
-import io.micronaut.http.HttpStatus;
-import io.micronaut.http.annotation.Controller;
-import io.micronaut.http.annotation.Get;
+import com.github.example.dto.request.CommandCreateAccount;
+import com.github.example.dto.response.AccountData;
+import com.github.example.model.Account;
+import com.github.example.service.AccountService;
+import io.micronaut.http.HttpResponse;
+import io.micronaut.http.annotation.*;
+import org.modelmapper.ModelMapper;
 
+import javax.inject.Inject;
+import java.net.URI;
+import java.util.Collection;
 
 @Controller("/accounts")
-public class AccountController
-{
+public class AccountController extends AbstractController<Account, AccountData> {
 
-	@Get
-	public HttpStatus getAllAccounts()
-	{
-		return HttpStatus.OK;
-	}
+    private final AccountService accountService;
+
+    @Inject
+    public AccountController(final ModelMapper modelMapper, final AccountService accountService) {
+        super(modelMapper);
+        this.accountService = accountService;
+    }
+
+    @Get
+    @Produces
+    public Collection<AccountData> getAllAccounts() {
+        return convertToDto(accountService.getAll());
+    }
+
+    @Get(value = "/{accountId}")
+    @Produces
+    public HttpResponse<AccountData> getAccountById(final long accountId) {
+        final Account account = accountService.getById(accountId);
+        return HttpResponse.ok(convertToDto(account));
+    }
+
+    @Post
+    @Consumes
+    @Produces
+    public HttpResponse<AccountData> createAccount(@Body final CommandCreateAccount command) {
+        final Account account = accountService.createBy(command);
+        final URI location = HttpResponse.uri("/accounts/" + account.getId());
+        return HttpResponse.created(convertToDto(account), location);
+    }
+
+    @Override
+    protected Class<AccountData> getDtoClass() {
+        return AccountData.class;
+    }
 }
