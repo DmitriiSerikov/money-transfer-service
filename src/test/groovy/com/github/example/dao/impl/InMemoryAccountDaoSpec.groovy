@@ -1,8 +1,7 @@
-package com.github.example.dao
+package com.github.example.dao.impl
 
 import com.blogspot.toomuchcoding.spock.subjcollabs.Collaborator
 import com.blogspot.toomuchcoding.spock.subjcollabs.Subject
-import com.github.example.dao.impl.InMemoryAccountDaoImpl
 import com.github.example.exception.EntityAlreadyExistsException
 import com.github.example.exception.EntityNotFoundException
 import com.github.example.holder.LockHolder
@@ -13,7 +12,7 @@ import spock.lang.Specification
 import static java.math.BigDecimal.ONE
 
 /**
- * Unit test for {@link com.github.example.dao.impl.InMemoryAccountDaoImpl}
+ * Unit test for {@link InMemoryAccountDaoImpl}
  */
 class InMemoryAccountDaoSpec extends Specification {
 

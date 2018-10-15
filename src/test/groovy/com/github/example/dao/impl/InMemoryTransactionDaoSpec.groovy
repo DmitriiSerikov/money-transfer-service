@@ -1,8 +1,7 @@
-package com.github.example.dao
+package com.github.example.dao.impl
 
 import com.blogspot.toomuchcoding.spock.subjcollabs.Collaborator
 import com.blogspot.toomuchcoding.spock.subjcollabs.Subject
-import com.github.example.dao.impl.InMemoryTransactionDaoImpl
 import com.github.example.exception.EntityAlreadyExistsException
 import com.github.example.exception.EntityNotFoundException
 import com.github.example.holder.LockHolder
