@@ -1,0 +1,16 @@
+{
+  "id": "67180682-8dc7-cf87-0b3d-8149bcfbc265",
+  "name": "Heroku",
+  "values": [
+    {
+      "enabled": true,
+      "key": "url",
+      "value": "https://money-transfer-service.herokuapp.com",
+      "type": "text"
+    }
+  ],
+  "timestamp": 1540066020043,
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2018-10-20T20:09:36.584Z",
+  "_postman_exported_using": "Postman/5.5.3"
+}

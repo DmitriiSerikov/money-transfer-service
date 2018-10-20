@@ -5,18 +5,12 @@
     {
       "enabled": true,
       "key": "url",
-      "value": "http://localhost",
-      "type": "text"
-    },
-    {
-      "enabled": true,
-      "key": "port",
-      "value": "8080",
+      "value": "https://localhost:8080",
       "type": "text"
     }
   ],
-  "timestamp": 1539631058347,
+  "timestamp": 1540066013813,
   "_postman_variable_scope": "environment",
-  "_postman_exported_at": "2018-10-16T08:32:39.491Z",
+  "_postman_exported_at": "2018-10-20T20:09:39.757Z",
   "_postman_exported_using": "Postman/5.5.3"
 }

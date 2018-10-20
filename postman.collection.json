@@ -14,7 +14,7 @@
         {
           "name": "Get all accounts",
           "request": {
-            "url": "{{url}}:{{port}}/accounts",
+            "url": "{{url}}/accounts",
             "method": "GET",
             "header": [],
             "body": {
@@ -28,7 +28,7 @@
         {
           "name": "Get account by unique identificator",
           "request": {
-            "url": "{{url}}:{{port}}/accounts/1",
+            "url": "{{url}}/accounts/1",
             "method": "GET",
             "header": [],
             "body": {
@@ -42,7 +42,7 @@
         {
           "name": "Create new account",
           "request": {
-            "url": "{{url}}:{{port}}/accounts",
+            "url": "{{url}}/accounts",
             "method": "POST",
             "header": [
               {
@@ -68,7 +68,7 @@
         {
           "name": "Get all transcations",
           "request": {
-            "url": "{{url}}:{{port}}/transactions",
+            "url": "{{url}}/transactions",
             "method": "GET",
             "header": [],
             "body": {
@@ -82,7 +82,7 @@
         {
           "name": "Get transcation by unique identificator",
           "request": {
-            "url": "{{url}}:{{port}}/transactions/1",
+            "url": "{{url}}/transactions/1",
             "method": "GET",
             "header": [],
             "body": {
@@ -96,7 +96,7 @@
         {
           "name": "Create new transaction",
           "request": {
-            "url": "{{url}}:{{port}}/transactions",
+            "url": "{{url}}/transactions",
             "method": "POST",
             "header": [
               {
@@ -107,7 +107,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n\t\"sourceAccountId\": 1,\n\t\"targetAccountId\": 3,\n\t\"amount\": 10\n}"
+              "raw": "{\n\t\"sourceAccountId\": 7,\n\t\"targetAccountId\": 3,\n\t\"amount\": 10\n}"
             },
             "description": ""
           },
