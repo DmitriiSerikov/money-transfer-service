@@ -12,7 +12,25 @@
         <groovy.version>2.5.2</groovy.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <sonar.exclusions>**/*Data.*</sonar.exclusions>
+        <skip.unit.tests>false</skip.unit.tests>
+        <skip.integration.tests>true</skip.integration.tests>
+        <redirect.output.to.file>true</redirect.output.to.file>
     </properties>
+    <profiles>
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+        <profile>
+            <id>integration-test</id>
+            <properties>
+                <skip.unit.tests>true</skip.unit.tests>
+                <skip.integration.tests>false</skip.integration.tests>
+            </properties>
+        </profile>
+    </profiles>
     <repositories>
         <repository>
             <id>jcenter.bintray.com</id>
@@ -81,7 +99,7 @@
             <exclusions>
                 <exclusion>
                     <groupId>org.codehaus.groovy</groupId>
-                    <artifactId>*</artifactId>
+                    <artifactId>groovy-*</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -158,6 +176,22 @@
                 <groupId>org.codehaus.gmavenplus</groupId>
                 <artifactId>gmavenplus-plugin</artifactId>
                 <version>1.6.2</version>
+                <configuration>
+                    <testSources>
+                        <testSource>
+                            <directory>src/test/groovy</directory>
+                            <includes>
+                                <include>**/*.groovy</include>
+                            </includes>
+                        </testSource>
+                        <testSource>
+                            <directory>src/integration-test/groovy</directory>
+                            <includes>
+                                <include>**/*.groovy</include>
+                            </includes>
+                        </testSource>
+                    </testSources>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
@@ -172,10 +206,36 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.22.1</version>
                 <configuration>
+                    <groups>com.github.example.UnitTest</groups>
                     <includes>
                         <include>**/*Spec.*</include>
                     </includes>
-                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <skipTests>${skip.unit.tests}</skipTests>
+                    <redirectTestOutputToFile>${redirect.output.to.file}</redirectTestOutputToFile>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.22.1</version>
+                <executions>
+                    <execution>
+                        <id>integration-test</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <groups>com.github.example.IntegrationTest</groups>
+                    <includes>
+                        <include>**/*Spec.*</include>
+                    </includes>
+                    <skipTests>${skip.integration.tests}</skipTests>
+                    <redirectTestOutputToFile>${redirect.output.to.file}</redirectTestOutputToFile>
+                    <classesDirectory>${project.build.directory}/original-${project.artifactId}-${project.version}.jar
+                    </classesDirectory>
                 </configuration>
             </plugin>
             <plugin>
@@ -187,6 +247,13 @@
                         <id>prepare-agent</id>
                         <goals>
                             <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
                         </goals>
                     </execution>
                 </executions>

@@ -2,6 +2,7 @@ package com.github.example.service.impl
 
 import com.blogspot.toomuchcoding.spock.subjcollabs.Collaborator
 import com.blogspot.toomuchcoding.spock.subjcollabs.Subject
+import com.github.example.UnitTest
 import com.github.example.dao.AccountDao
 import com.github.example.dao.TransactionDao
 import com.github.example.exception.CouldNotAcquireLockException
@@ -9,6 +10,7 @@ import com.github.example.exception.EntityNotFoundException
 import com.github.example.model.Account
 import com.github.example.model.Transaction
 import org.junit.Test
+import org.junit.experimental.categories.Category
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -16,9 +18,7 @@ import static com.github.example.model.Transaction.TransactionStatus.FAILED
 import static com.github.example.model.Transaction.TransactionStatus.SUCCESS
 import static java.math.BigDecimal.ONE
 
-/**
- * Unit test for {@link TransactionExecutionServiceImpl}
- */
+@Category(UnitTest)
 class TransactionExecutionServiceSpec extends Specification {
 
     @Subject

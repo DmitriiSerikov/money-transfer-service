@@ -1,17 +1,17 @@
 package com.github.example.handler
 
 import com.blogspot.toomuchcoding.spock.subjcollabs.Subject
+import com.github.example.UnitTest
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.hateos.Link
 import org.junit.Test
+import org.junit.experimental.categories.Category
 import spock.lang.Specification
 
 import static io.micronaut.http.HttpResponse.uri
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 
-/**
- * Unit test for {@link IllegalArgumentExceptionHandler}
- */
+@Category(UnitTest)
 class IllegalArgumentExceptionHandlerSpec extends Specification {
 
     @Subject

@@ -2,13 +2,13 @@ package com.github.example.job
 
 import com.blogspot.toomuchcoding.spock.subjcollabs.Collaborator
 import com.blogspot.toomuchcoding.spock.subjcollabs.Subject
+import com.github.example.UnitTest
 import com.github.example.service.TransactionExecutionService
 import org.junit.Test
+import org.junit.experimental.categories.Category
 import spock.lang.Specification
 
-/**
- * Unit test for {@link TransactionsProcessingJob}
- */
+@Category(UnitTest)
 class TransactionsProcessingJobSpec extends Specification {
 
     @Subject

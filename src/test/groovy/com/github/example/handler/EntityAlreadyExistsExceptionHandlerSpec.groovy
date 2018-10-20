@@ -1,18 +1,18 @@
 package com.github.example.handler
 
 import com.blogspot.toomuchcoding.spock.subjcollabs.Subject
+import com.github.example.UnitTest
 import com.github.example.exception.EntityAlreadyExistsException
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.hateos.Link
 import org.junit.Test
+import org.junit.experimental.categories.Category
 import spock.lang.Specification
 
 import static io.micronaut.http.HttpResponse.uri
 import static io.micronaut.http.HttpStatus.CONFLICT
 
-/**
- * Unit test for {@link EntityAlreadyExistsExceptionHandler}
- */
+@Category(UnitTest)
 class EntityAlreadyExistsExceptionHandlerSpec extends Specification {
 
     @Subject

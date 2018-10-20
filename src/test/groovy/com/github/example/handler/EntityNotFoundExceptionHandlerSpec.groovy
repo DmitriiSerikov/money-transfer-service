@@ -1,18 +1,18 @@
 package com.github.example.handler
 
 import com.blogspot.toomuchcoding.spock.subjcollabs.Subject
+import com.github.example.UnitTest
 import com.github.example.exception.EntityNotFoundException
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.hateos.Link
 import org.junit.Test
+import org.junit.experimental.categories.Category
 import spock.lang.Specification
 
 import static io.micronaut.http.HttpResponse.uri
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 
-/**
- * Unit test for {@link EntityNotFoundExceptionHandler}
- */
+@Category(UnitTest)
 class EntityNotFoundExceptionHandlerSpec extends Specification {
 
     @Subject

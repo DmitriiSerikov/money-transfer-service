@@ -2,18 +2,18 @@ package com.github.example.dao.impl
 
 import com.blogspot.toomuchcoding.spock.subjcollabs.Collaborator
 import com.blogspot.toomuchcoding.spock.subjcollabs.Subject
+import com.github.example.UnitTest
 import com.github.example.exception.EntityAlreadyExistsException
 import com.github.example.exception.EntityNotFoundException
 import com.github.example.holder.LockHolder
 import com.github.example.model.Account
 import org.junit.Test
+import org.junit.experimental.categories.Category
 import spock.lang.Specification
 
 import static java.math.BigDecimal.ONE
 
-/**
- * Unit test for {@link InMemoryAccountDaoImpl}
- */
+@Category(UnitTest)
 class InMemoryAccountDaoSpec extends Specification {
 
     @Subject

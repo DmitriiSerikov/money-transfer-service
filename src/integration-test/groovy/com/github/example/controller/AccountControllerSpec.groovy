@@ -1,5 +1,6 @@
 package com.github.example.controller
 
+import com.github.example.IntegrationTest
 import com.github.example.dto.request.CommandCreateAccount
 import com.github.example.dto.response.AccountData
 import io.micronaut.context.ApplicationContext
@@ -9,13 +10,12 @@ import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.runtime.server.EmbeddedServer
 import org.junit.Test
+import org.junit.experimental.categories.Category
 import spock.lang.AutoCleanup
 import spock.lang.Shared
 import spock.lang.Specification
 
-/**
- * Integration test for {@link AccountController}
- */
+@Category(IntegrationTest)
 class AccountControllerSpec extends Specification {
 
     @Shared

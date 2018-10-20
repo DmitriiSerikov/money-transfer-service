@@ -2,18 +2,18 @@ package com.github.example.service.impl
 
 import com.blogspot.toomuchcoding.spock.subjcollabs.Collaborator
 import com.blogspot.toomuchcoding.spock.subjcollabs.Subject
+import com.github.example.UnitTest
 import com.github.example.dao.AccountDao
 import com.github.example.dto.request.CommandCreateAccount
 import com.github.example.exception.EntityNotFoundException
 import com.github.example.model.Account
 import org.junit.Test
+import org.junit.experimental.categories.Category
 import spock.lang.Specification
 
 import static java.math.BigDecimal.ONE
 
-/**
- * Unit test for {@link AccountServiceImpl}
- */
+@Category(UnitTest)
 class AccountServiceSpec extends Specification {
 
     @Subject
