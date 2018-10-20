@@ -7,10 +7,11 @@
     <version>0.1</version>
     <properties>
         <exec.mainClass>com.github.example.Application</exec.mainClass>
-        <micronaut.version>1.0.0.RC2</micronaut.version>
+        <micronaut.version>1.0.0.RC3</micronaut.version>
         <jdk.version>1.8</jdk.version>
+        <groovy.version>2.5.2</groovy.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <sonar.exclusions>**/*Data.java</sonar.exclusions>
+        <sonar.exclusions>**/*Data.*</sonar.exclusions>
     </properties>
     <repositories>
         <repository>
@@ -22,7 +23,7 @@
         <dependencies>
             <dependency>
                 <groupId>io.micronaut</groupId>
-                <artifactId>bom</artifactId>
+                <artifactId>micronaut-bom</artifactId>
                 <version>${micronaut.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -32,38 +33,38 @@
     <dependencies>
         <dependency>
             <groupId>io.micronaut</groupId>
-            <artifactId>http-client</artifactId>
+            <artifactId>micronaut-http-client</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>io.micronaut</groupId>
-            <artifactId>http-server-netty</artifactId>
+            <artifactId>micronaut-http-server-netty</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>io.micronaut</groupId>
-            <artifactId>inject</artifactId>
+            <artifactId>micronaut-inject</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>io.micronaut</groupId>
-            <artifactId>validation</artifactId>
+            <artifactId>micronaut-validation</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>io.micronaut</groupId>
-            <artifactId>runtime</artifactId>
+            <artifactId>micronaut-runtime</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>io.micronaut</groupId>
-            <artifactId>inject-java</artifactId>
+            <artifactId>micronaut-inject-java</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.modelmapper</groupId>
             <artifactId>modelmapper</artifactId>
-            <version>0.7.4</version>
+            <version>2.3.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -75,19 +76,19 @@
         <dependency>
             <groupId>org.spockframework</groupId>
             <artifactId>spock-core</artifactId>
-            <version>1.2-groovy-2.4</version>
+            <version>1.2-groovy-2.5</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.codehaus.groovy</groupId>
-                    <artifactId>groovy-all</artifactId>
+                    <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
         <dependency>
             <groupId>com.blogspot.toomuchcoding</groupId>
             <artifactId>spock-subjects-collaborators-extension</artifactId>
-            <version>1.2.1</version>
+            <version>1.2.2</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -98,7 +99,7 @@
         </dependency>
         <dependency>
             <groupId>io.micronaut</groupId>
-            <artifactId>inject-groovy</artifactId>
+            <artifactId>micronaut-inject-groovy</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -110,6 +111,7 @@
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy</artifactId>
+            <version>${groovy.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -118,7 +120,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.2.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -130,9 +132,9 @@
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>${exec.mainClass}</mainClass>
                                 </transformer>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
                         </configuration>
                     </execution>
                 </executions>
@@ -155,14 +157,12 @@
             <plugin>
                 <groupId>org.codehaus.gmavenplus</groupId>
                 <artifactId>gmavenplus-plugin</artifactId>
-                <version>1.6.1</version>
+                <version>1.6.2</version>
                 <executions>
                     <execution>
                         <goals>
                             <goal>addTestSources</goal>
-                            <goal>addSources</goal>
                             <goal>compileTests</goal>
-                            <goal>compile</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -170,7 +170,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.21.0</version>
+                <version>2.22.1</version>
                 <configuration>
                     <includes>
                         <include>**/*Spec.*</include>
@@ -207,17 +207,17 @@
                         <annotationProcessorPaths>
                             <path>
                                 <groupId>io.micronaut</groupId>
-                                <artifactId>inject-java</artifactId>
+                                <artifactId>micronaut-inject-java</artifactId>
                                 <version>${micronaut.version}</version>
                             </path>
                             <path>
                                 <groupId>io.micronaut</groupId>
-                                <artifactId>validation</artifactId>
+                                <artifactId>micronaut-validation</artifactId>
                                 <version>${micronaut.version}</version>
                             </path>
                             <path>
                                 <groupId>io.micronaut</groupId>
-                                <artifactId>inject-groovy</artifactId>
+                                <artifactId>micronaut-inject-groovy</artifactId>
                                 <version>${micronaut.version}</version>
                             </path>
                         </annotationProcessorPaths>
