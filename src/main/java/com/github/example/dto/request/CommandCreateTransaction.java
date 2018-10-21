@@ -2,28 +2,29 @@ package com.github.example.dto.request;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.UUID;
 
 
 public class CommandCreateTransaction implements Serializable {
     private static final long serialVersionUID = 7226383963100484243L;
 
-    private long sourceAccountId;
-    private long targetAccountId;
+    private UUID sourceAccountId;
+    private UUID targetAccountId;
     private BigDecimal amount;
 
-    public long getSourceAccountId() {
+    public UUID getSourceAccountId() {
         return sourceAccountId;
     }
 
-    public void setSourceAccountId(long sourceAccountId) {
+    public void setSourceAccountId(UUID sourceAccountId) {
         this.sourceAccountId = sourceAccountId;
     }
 
-    public long getTargetAccountId() {
+    public UUID getTargetAccountId() {
         return targetAccountId;
     }
 
-    public void setTargetAccountId(long targetAccountId) {
+    public void setTargetAccountId(UUID targetAccountId) {
         this.targetAccountId = targetAccountId;
     }
 

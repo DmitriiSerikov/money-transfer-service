@@ -11,6 +11,7 @@ import org.modelmapper.ModelMapper;
 import javax.inject.Inject;
 import java.net.URI;
 import java.util.Collection;
+import java.util.UUID;
 
 @Controller("/accounts")
 public class AccountController extends AbstractController<Account, AccountData> {
@@ -31,7 +32,7 @@ public class AccountController extends AbstractController<Account, AccountData> 
 
     @Get(value = "/{accountId}")
     @Produces
-    public HttpResponse<AccountData> getAccountById(final long accountId) {
+    public HttpResponse<AccountData> getAccountById(final UUID accountId) {
         final Account account = accountService.getById(accountId);
         return HttpResponse.ok(convertToDto(account));
     }

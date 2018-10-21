@@ -23,7 +23,10 @@ class InMemoryTransactionDaoSpec extends Specification {
     @Collaborator
     LockHolder lockHolder = Mock()
 
-    def transaction = new Transaction(10, 20, ONE)
+    def someUUID = UUID.fromString "00000000-0000-0000-0000-000000000000"
+    def firstAccountId = UUID.fromString "00000000-0000-0000-0000-000000000001"
+    def secondAccountId = UUID.fromString "00000000-0000-0000-0000-000000000002"
+    def transaction = new Transaction(firstAccountId, secondAccountId, ONE)
 
     @Test
     def "should throw exception when transaction for insertion is null"() {
@@ -79,7 +82,7 @@ class InMemoryTransactionDaoSpec extends Specification {
     @Test
     def "should return collection of all stored transactions sorted by creation date-time when storage contains more than one transaction"() {
         given:
-        def createdLaterTransaction = new Transaction(10, 20, ONE)
+        def createdLaterTransaction = new Transaction(firstAccountId, secondAccountId, ONE)
         and:
         inMemoryTransactionDao.insert transaction
         inMemoryTransactionDao.insert createdLaterTransaction
@@ -88,7 +91,7 @@ class InMemoryTransactionDaoSpec extends Specification {
         def result = inMemoryTransactionDao.findAll()
 
         then:
-        result[0].creationTime < result[1].creationTime
+        result[0].createdAt < result[1].createdAt
     }
 
     @Test
@@ -103,8 +106,8 @@ class InMemoryTransactionDaoSpec extends Specification {
     @Test
     def "should return collection of pending transactions when storage contains transactions with different statuses"() {
         given:
-        def failedTransaction = new Transaction(10, 20, ONE).failed("Failed")
-        def executedTransaction = new Transaction(10, 20, ONE).executed()
+        def failedTransaction = new Transaction(firstAccountId, secondAccountId, ONE).failed("Failed")
+        def executedTransaction = new Transaction(firstAccountId, secondAccountId, ONE).executed()
         and:
         inMemoryTransactionDao.insert failedTransaction
         inMemoryTransactionDao.insert executedTransaction
@@ -121,7 +124,7 @@ class InMemoryTransactionDaoSpec extends Specification {
     @Test
     def "should return collection of pending transactions sorted by creation date-time when storage contains more than one pending transaction"() {
         given:
-        def createdLaterPendingTransaction = new Transaction(10, 20, ONE)
+        def createdLaterPendingTransaction = new Transaction(firstAccountId, secondAccountId, ONE)
         and:
         inMemoryTransactionDao.insert transaction
         inMemoryTransactionDao.insert createdLaterPendingTransaction
@@ -130,13 +133,13 @@ class InMemoryTransactionDaoSpec extends Specification {
         def result = inMemoryTransactionDao.findPending 3
 
         then:
-        result[0].creationTime < result[1].creationTime
+        result[0].createdAt < result[1].createdAt
     }
 
     @Test
     def "should return limited collection of pending transactions when storage contains more pending transactions then specified by limit"() {
         given:
-        def anotherPendingTransaction = new Transaction(10, 20, ONE)
+        def anotherPendingTransaction = new Transaction(firstAccountId, secondAccountId, ONE)
         and:
         inMemoryTransactionDao.insert anotherPendingTransaction
         inMemoryTransactionDao.insert transaction
@@ -151,7 +154,7 @@ class InMemoryTransactionDaoSpec extends Specification {
     @Test
     def "should throw exception when storage doesn't contains transaction for specified id"() {
         when:
-        inMemoryTransactionDao.getBy 10
+        inMemoryTransactionDao.getBy someUUID
 
         then:
         thrown EntityNotFoundException
@@ -221,18 +224,18 @@ class InMemoryTransactionDaoSpec extends Specification {
     @Test
     def "should acquire lock using holder when try to lock transaction for specified id"() {
         when:
-        inMemoryTransactionDao.lockBy 10
+        inMemoryTransactionDao.lockBy someUUID
 
         then:
-        1 * lockHolder.acquire("Transaction_10")
+        1 * lockHolder.acquire({ it.contains(someUUID as String) } as String)
     }
 
     @Test
     def "should release lock using holder when try to unlock transaction for specified id"() {
         when:
-        inMemoryTransactionDao.unlockBy 10
+        inMemoryTransactionDao.unlockBy someUUID
 
         then:
-        1 * lockHolder.release("Transaction_10")
+        1 * lockHolder.release({ it.contains(someUUID as String) } as String)
     }
 }

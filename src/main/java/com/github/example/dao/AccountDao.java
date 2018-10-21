@@ -6,6 +6,7 @@ import com.github.example.exception.EntityNotFoundException;
 import com.github.example.model.Account;
 
 import java.util.Collection;
+import java.util.UUID;
 
 
 public interface AccountDao {
@@ -22,19 +23,19 @@ public interface AccountDao {
      *
      * @param account the account entity for storing into the storage
      * @return the account entity successfully persisted into the storage
-     * @throws EntityAlreadyExistsException if account with the unique identificator is already present
+     * @throws EntityAlreadyExistsException if account with the unique identifier is already present
      */
     Account insert(Account account);
 
     /**
-     * Returns account by the unique identificator of account
+     * Returns account by the unique identifier of account
      * in case it's already present in the storage.
      *
-     * @param accountId the unique identificator of account
-     * @return returns account found by unique identificator
-     * @throws EntityNotFoundException if storage doesn't contain account with specified unique identificator
+     * @param accountId the unique identifier of account
+     * @return returns account found by unique identifier
+     * @throws EntityNotFoundException if storage doesn't contain account with specified unique identifier
      */
-    Account getBy(long accountId);
+    Account getBy(UUID accountId);
 
     /**
      * Update account in the storage in case it already present
@@ -45,17 +46,17 @@ public interface AccountDao {
     void update(Account account);
 
     /**
-     * Acquires the lock for account entity by the unique identificator.
+     * Acquires the lock for account entity by the unique identifier.
      *
-     * @param accountId the unique identificator of account
+     * @param accountId the unique identifier of account
      * @throws CouldNotAcquireLockException if lock is already acquired or thread is interrupted
      */
-    void lockBy(long accountId);
+    void lockBy(UUID accountId);
 
     /**
-     * Releases lock for account entity by the unique identificator.
+     * Releases lock for account entity by the unique identifier.
      *
-     * @param accountId the unique identificator of account
+     * @param accountId the unique identifier of account
      */
-    void unlockBy(long accountId);
+    void unlockBy(UUID accountId);
 }

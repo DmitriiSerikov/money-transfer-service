@@ -10,16 +10,17 @@ import org.modelmapper.internal.util.Assert;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import static java.util.Collections.unmodifiableCollection;
 
 @Singleton
 public class InMemoryAccountDaoImpl implements AccountDao {
 
-    private final Map<Long, Account> storage = new ConcurrentHashMap<>();
+    private final ConcurrentMap<UUID, Account> storage = new ConcurrentHashMap<>();
     private final LockHolder lockHolder;
 
     @Inject
@@ -45,7 +46,7 @@ public class InMemoryAccountDaoImpl implements AccountDao {
     }
 
     @Override
-    public Account getBy(final long accountId) {
+    public Account getBy(final UUID accountId) {
         return Optional.ofNullable(storage.get(accountId))
                 .orElseThrow(() -> new EntityNotFoundException("Account not exists for id:" + accountId));
     }
@@ -54,7 +55,7 @@ public class InMemoryAccountDaoImpl implements AccountDao {
     public void update(final Account account) {
         Assert.notNull(account);
 
-        final long accountId = account.getId();
+        final UUID accountId = account.getId();
 
         lockBy(accountId);
         try {
@@ -65,16 +66,16 @@ public class InMemoryAccountDaoImpl implements AccountDao {
     }
 
     @Override
-    public void lockBy(final long accountId) {
+    public void lockBy(final UUID accountId) {
         lockHolder.acquire(getLockId(accountId));
     }
 
     @Override
-    public void unlockBy(final long accountId) {
+    public void unlockBy(final UUID accountId) {
         lockHolder.release(getLockId(accountId));
     }
 
-    private String getLockId(final long accountId) {
+    private String getLockId(final UUID accountId) {
         return "Account_" + accountId;
     }
 }

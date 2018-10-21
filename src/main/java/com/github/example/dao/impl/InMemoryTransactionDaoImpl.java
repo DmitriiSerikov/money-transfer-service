@@ -11,6 +11,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -21,7 +22,7 @@ import static java.util.Comparator.comparing;
 @Singleton
 public class InMemoryTransactionDaoImpl implements TransactionDao {
 
-    private final ConcurrentMap<Long, Transaction> storage = new ConcurrentHashMap<>();
+    private final ConcurrentMap<UUID, Transaction> storage = new ConcurrentHashMap<>();
     private final LockHolder lockHolder;
 
     @Inject
@@ -32,7 +33,7 @@ public class InMemoryTransactionDaoImpl implements TransactionDao {
     @Override
     public Collection<Transaction> findAll() {
         return storage.values().stream()
-                .sorted(comparing(Transaction::getCreationTime))
+                .sorted(comparing(Transaction::getCreatedAt))
                 .collect(Collectors.toList());
     }
 
@@ -57,7 +58,7 @@ public class InMemoryTransactionDaoImpl implements TransactionDao {
     }
 
     @Override
-    public Transaction getBy(final long transactionId) {
+    public Transaction getBy(final UUID transactionId) {
         return Optional.ofNullable(storage.get(transactionId))
                 .orElseThrow(() -> new EntityNotFoundException("Transaction not exists for id:" + transactionId));
     }
@@ -66,7 +67,7 @@ public class InMemoryTransactionDaoImpl implements TransactionDao {
     public void update(final Transaction transaction) {
         Assert.notNull(transaction);
 
-        final long transactionId = transaction.getId();
+        final UUID transactionId = transaction.getId();
 
         lockBy(transactionId);
         try {
@@ -77,16 +78,16 @@ public class InMemoryTransactionDaoImpl implements TransactionDao {
     }
 
     @Override
-    public void lockBy(final long transactionId) {
+    public void lockBy(final UUID transactionId) {
         lockHolder.acquire(getLockId(transactionId));
     }
 
     @Override
-    public void unlockBy(final long transactionId) {
+    public void unlockBy(final UUID transactionId) {
         lockHolder.release(getLockId(transactionId));
     }
 
-    private String getLockId(final long transactionId) {
+    private String getLockId(final UUID transactionId) {
         return "Transaction_" + transactionId;
     }
 }

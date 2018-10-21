@@ -41,7 +41,7 @@ class AccountControllerSpec extends Specification {
     @Test
     def "should return error response with 404 status code when account with specified id doesn't exist"() {
         given:
-        def request = HttpRequest.GET "/accounts/1"
+        def request = HttpRequest.GET "/accounts/550e8400-e29b-41d4-a716-446655440000"
 
         when:
         client.toBlocking().exchange request
@@ -49,7 +49,21 @@ class AccountControllerSpec extends Specification {
         then:
         def ex = thrown HttpClientResponseException
         ex.status == HttpStatus.NOT_FOUND
-        ex.message == "Account not exists for id:1"
+        ex.message == "Account not exists for id:550e8400-e29b-41d4-a716-446655440000"
+    }
+
+    @Test
+    def "should return error response with 400 status code when trying to get account with incorrect id format"() {
+        given:
+        def request = HttpRequest.GET "/accounts/1"
+
+        when:
+        client.toBlocking().exchange request
+
+        then:
+        def ex = thrown HttpClientResponseException
+        ex.status == HttpStatus.BAD_REQUEST
+        ex.message == "Failed to convert argument [accountId] for value [1] due to: Invalid UUID string: 1"
     }
 
     @Test

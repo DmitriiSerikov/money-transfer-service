@@ -38,6 +38,7 @@ class TransactionExecutionServiceSpec extends Specification {
     def transaction = new Transaction(firstAccountId, secondAccountId, ONE)
     def transactionId = transaction.id
     def limit = 10
+    def someUUID = UUID.fromString "00000000-0000-0000-0000-000000000000"
 
     def setup() {
         transactionDao.getBy(transactionId) >> transaction
@@ -168,11 +169,10 @@ class TransactionExecutionServiceSpec extends Specification {
     @Test
     def "should throw exception when transaction is not found in transactions storage by specified id"() {
         given:
-        def notExistTransactionId = 0
-        transactionDao.getBy(notExistTransactionId) >> { throw new EntityNotFoundException("Not found") }
+        transactionDao.getBy(someUUID) >> { throw new EntityNotFoundException("Not found") }
 
         when:
-        executionService.execute notExistTransactionId
+        executionService.execute someUUID
 
         then:
         thrown EntityNotFoundException
@@ -247,37 +247,35 @@ class TransactionExecutionServiceSpec extends Specification {
     @Test
     def "should mark transaction as failed when accounts storage doesn't contains source account for specified id and throws exception"() {
         given:
-        def notExistSourceAccountId = 1000
-        def transaction = new Transaction(notExistSourceAccountId, secondAccountId, ONE)
+        def transaction = new Transaction(someUUID, secondAccountId, ONE)
         def transactionId = transaction.id
         transactionDao.getBy(transactionId) >> transaction
         and:
-        accountDao.getBy(notExistSourceAccountId) >> { throw new EntityNotFoundException("Not found") }
+        accountDao.getBy(someUUID) >> { throw new EntityNotFoundException("Not found") }
 
         when:
         executionService.execute transactionId
 
         then:
         1 * transactionDao.update({ it.status == FAILED } as Transaction)
-        interaction { ensureResourcesUnlockedBy notExistSourceAccountId, secondAccountId, transactionId }
+        interaction { ensureResourcesUnlockedBy someUUID, secondAccountId, transactionId }
     }
 
     @Test
     def "should mark transaction as failed when accounts storage doesn't contains target account for specified id and throws exception"() {
         given:
-        def notExistTargetAccountId = 10
-        def transaction = new Transaction(firstAccountId, notExistTargetAccountId, ONE)
+        def transaction = new Transaction(firstAccountId, someUUID, ONE)
         def transactionId = transaction.id
         transactionDao.getBy(transactionId) >> transaction
         and:
-        accountDao.getBy(notExistTargetAccountId) >> { throw new EntityNotFoundException("Not found") }
+        accountDao.getBy(someUUID) >> { throw new EntityNotFoundException("Not found") }
 
         when:
         executionService.execute transactionId
 
         then:
         1 * transactionDao.update({ it.status == FAILED } as Transaction)
-        interaction { ensureResourcesUnlockedBy firstAccountId, notExistTargetAccountId, transactionId }
+        interaction { ensureResourcesUnlockedBy firstAccountId, someUUID, transactionId }
     }
 
     @Test
@@ -371,7 +369,7 @@ class TransactionExecutionServiceSpec extends Specification {
         interaction { ensureResourcesUnlockedBy firstAccountId, secondAccountId, transactionId }
     }
 
-    def ensureResourcesUnlockedBy(long sourceAccountId, long targetAccountId, long transactionId) {
+    def ensureResourcesUnlockedBy(UUID sourceAccountId, UUID targetAccountId, UUID transactionId) {
         1 * accountDao.unlockBy(sourceAccountId)
         1 * accountDao.unlockBy(targetAccountId)
         1 * transactionDao.unlockBy(transactionId)

@@ -27,8 +27,9 @@ class TransactionControllerSpec extends Specification {
     @AutoCleanup
     HttpClient client = embeddedServer.applicationContext.createBean(HttpClient, embeddedServer.getURL())
 
-    long sourceAccountId
-    long targetAccountId
+    def notExistAccountId = UUID.fromString "550e8400-e29b-41d4-a716-446655440000"
+    def sourceAccountId
+    def targetAccountId
 
     def setup() {
         sourceAccountId = createAccount 100
@@ -51,7 +52,7 @@ class TransactionControllerSpec extends Specification {
     @Test
     def "should return error response with 404 status code when transaction with specified id doesn't exist"() {
         given:
-        def request = HttpRequest.GET "/transactions/1"
+        def request = HttpRequest.GET "/transactions/550e8400-e29b-41d4-a716-446655440000"
 
         when:
         client.toBlocking().exchange request
@@ -59,35 +60,43 @@ class TransactionControllerSpec extends Specification {
         then:
         def ex = thrown HttpClientResponseException
         ex.status == HttpStatus.NOT_FOUND
-        ex.message == "Transaction not exists for id:1"
+        ex.message == "Transaction not exists for id:550e8400-e29b-41d4-a716-446655440000"
+    }
+
+    @Test
+    def "should return error response with 400 status code when trying to get transaction with incorrect id format"() {
+        given:
+        def request = HttpRequest.GET "/transactions/1"
+
+        when:
+        client.toBlocking().exchange request
+
+        then:
+        def ex = thrown HttpClientResponseException
+        ex.status == HttpStatus.BAD_REQUEST
+        ex.message == "Failed to convert argument [transactionId] for value [1] due to: Invalid UUID string: 1"
     }
 
     @Test
     def "should return error with 400 status code when trying to create transaction for source account that not exists"() {
-        given:
-        def sourceAccountId = -10
-
         when:
-        createTransaction sourceAccountId, targetAccountId, 10
+        createTransaction notExistAccountId, targetAccountId, 10
 
         then:
         def ex = thrown HttpClientResponseException
         ex.status == HttpStatus.BAD_REQUEST
-        ex.message == "Account not exists for id:-10"
+        ex.message == "Account not exists for id:550e8400-e29b-41d4-a716-446655440000"
     }
 
     @Test
     def "should return error with 400 status code when trying to create transaction for target account that not exists"() {
-        given:
-        def targetAccountId = -10
-
         when:
-        createTransaction sourceAccountId, targetAccountId, 10
+        createTransaction sourceAccountId, notExistAccountId, 10
 
         then:
         def ex = thrown HttpClientResponseException
         ex.status == HttpStatus.BAD_REQUEST
-        ex.message == "Account not exists for id:-10"
+        ex.message == "Account not exists for id:550e8400-e29b-41d4-a716-446655440000"
     }
 
     @Test
@@ -177,7 +186,7 @@ class TransactionControllerSpec extends Specification {
 
         def response = client.toBlocking().exchange request, TransactionData.class
 
-        response.header("Location") - "/transactions/" as Long
+        UUID.fromString response.header("Location") - "/transactions/"
     }
 
     def createAccount(def initialBalance) {

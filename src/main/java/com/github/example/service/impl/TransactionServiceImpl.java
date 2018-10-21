@@ -11,6 +11,7 @@ import org.modelmapper.internal.util.Assert;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Collection;
+import java.util.UUID;
 
 @Singleton
 public class TransactionServiceImpl implements TransactionService {
@@ -30,7 +31,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public Transaction getById(final long transactionId) {
+    public Transaction getById(final UUID transactionId) {
         return transactionDao.getBy(transactionId);
     }
 
@@ -38,8 +39,8 @@ public class TransactionServiceImpl implements TransactionService {
     public Transaction createBy(final CommandCreateTransaction command) {
         Assert.notNull(command);
 
-        final long sourceAccountId = command.getSourceAccountId();
-        final long targetAccountId = command.getTargetAccountId();
+        final UUID sourceAccountId = command.getSourceAccountId();
+        final UUID targetAccountId = command.getTargetAccountId();
 
         checkAccountExistsById(sourceAccountId);
         checkAccountExistsById(targetAccountId);
@@ -48,7 +49,7 @@ public class TransactionServiceImpl implements TransactionService {
         return transactionDao.insert(transaction);
     }
 
-    private void checkAccountExistsById(final long accountId) {
+    private void checkAccountExistsById(final UUID accountId) {
         try {
             accountDao.getBy(accountId);
         } catch (EntityNotFoundException ex) {

@@ -18,6 +18,7 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static com.github.example.model.Transaction.TransactionStatus.PENDING;
 import static java.util.stream.Collectors.groupingBy;
@@ -48,15 +49,15 @@ public class TransactionExecutionServiceImpl implements TransactionExecutionServ
     }
 
     @Override
-    public void execute(final long transactionId) {
+    public void execute(final UUID transactionId) {
         LOGGER.info("Execute transaction with id:{} at {}", transactionId, Instant.now());
         transactionDao.lockBy(transactionId);
 
         Transaction transaction = transactionDao.getBy(transactionId);
         checkTransactionStatus(transaction);
 
-        final long sourceAccountId = transaction.getSourceAccountId();
-        final long targetAccountId = transaction.getTargetAccountId();
+        final UUID sourceAccountId = transaction.getSourceAccountId();
+        final UUID targetAccountId = transaction.getTargetAccountId();
         final BigDecimal amount = transaction.getAmount();
 
         try {
@@ -81,19 +82,19 @@ public class TransactionExecutionServiceImpl implements TransactionExecutionServ
         }
     }
 
-    private Map<Long, List<Transaction>> getTxGroupedBySourceAccount(final Collection<Transaction> transactions) {
+    private Map<UUID, List<Transaction>> getTxGroupedBySourceAccount(final Collection<Transaction> transactions) {
         return transactions.stream()
                 .collect(groupingBy(Transaction::getSourceAccountId));
     }
 
-    private void executeWithOrdering(final long sourceAccountId, final List<Transaction> transactions) {
+    private void executeWithOrdering(final UUID sourceAccountId, final List<Transaction> transactions) {
         LOGGER.info("Start execution of {} transactions with source account id:{}", transactions.size(), sourceAccountId);
         transactions.stream()
                 .map(Transaction::getId)
                 .forEach(this::executePendingTransaction);
     }
 
-    private void executePendingTransaction(final long transactionId) {
+    private void executePendingTransaction(final UUID transactionId) {
         try {
             execute(transactionId);
         } catch (CouldNotAcquireLockException | EntityNotFoundException | IllegalStateException ex) {
@@ -107,11 +108,11 @@ public class TransactionExecutionServiceImpl implements TransactionExecutionServ
         }
     }
 
-    private void acquireLocksWithOrdering(final long sourceAccountId, final long targetAccountId) {
-        final long firstLock;
-        final long secondLock;
+    private void acquireLocksWithOrdering(final UUID sourceAccountId, final UUID targetAccountId) {
+        final UUID firstLock;
+        final UUID secondLock;
 
-        if (sourceAccountId < targetAccountId) {
+        if (sourceAccountId.compareTo(targetAccountId) < 1) {
             firstLock = sourceAccountId;
             secondLock = targetAccountId;
         } else {

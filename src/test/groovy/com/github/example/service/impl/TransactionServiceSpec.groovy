@@ -33,6 +33,7 @@ class TransactionServiceSpec extends Specification {
     def amount = ONE
     def transaction = new Transaction(sourceAccountId, targetAccountId, amount)
     def transactionId = transaction.id
+    def someUUID = UUID.fromString "00000000-0000-0000-0000-000000000000"
 
     def setup() {
         accountDao.getBy(sourceAccountId) >> firstAccount
@@ -66,11 +67,10 @@ class TransactionServiceSpec extends Specification {
     @Test
     def "should throw exception when transactions storage doesn't contains entity for given id and throws exception"() {
         given:
-        def transactionId = 10
-        transactionDao.getBy(transactionId) >> { throw new EntityNotFoundException("Not found") }
+        transactionDao.getBy(someUUID) >> { throw new EntityNotFoundException("Not found") }
 
         when:
-        transactionService.getById transactionId
+        transactionService.getById someUUID
 
         then:
         thrown EntityNotFoundException
@@ -100,8 +100,7 @@ class TransactionServiceSpec extends Specification {
     @Test
     def "should throw exception when accounts storage doesn't contains entity for given source account id and throws exception"() {
         given:
-        def sourceAccountId = 50
-        def command = new CommandCreateTransaction(sourceAccountId: sourceAccountId, targetAccountId: targetAccountId)
+        def command = new CommandCreateTransaction(sourceAccountId: someUUID, targetAccountId: targetAccountId)
         and:
         accountDao.getBy(sourceAccountId) >> { throw new EntityNotFoundException("Not found") }
 
@@ -115,10 +114,9 @@ class TransactionServiceSpec extends Specification {
     @Test
     def "should throw exception when accounts storage doesn't contains entity for given target account id and throws exception"() {
         given:
-        def targetAccountId = 50
-        def command = new CommandCreateTransaction(sourceAccountId: sourceAccountId, targetAccountId: targetAccountId)
+        def command = new CommandCreateTransaction(sourceAccountId: sourceAccountId, targetAccountId: someUUID)
         and:
-        accountDao.getBy(targetAccountId) >> { throw new EntityNotFoundException("Not found") }
+        accountDao.getBy(someUUID) >> { throw new EntityNotFoundException("Not found") }
 
         when:
         transactionService.createBy command

@@ -5,6 +5,7 @@ import com.github.example.exception.EntityNotFoundException;
 import com.github.example.model.Transaction;
 
 import java.util.Collection;
+import java.util.UUID;
 
 
 public interface TransactionService {
@@ -17,13 +18,13 @@ public interface TransactionService {
     Collection<Transaction> getAll();
 
     /**
-     * Returns transaction by the unique identificator of transaction.
+     * Returns transaction by the unique identifier of transaction.
      *
-     * @param transactionId the unique identificator of transaction
-     * @return the transaction found by unique identificator
-     * @throws EntityNotFoundException if transaction is not found by unique identificator
+     * @param transactionId the unique identifier of transaction
+     * @return the transaction found by unique identifier
+     * @throws EntityNotFoundException if transaction is not found by unique identifier
      */
-    Transaction getById(long transactionId);
+    Transaction getById(UUID transactionId);
 
     /**
      * Creates transaction with attributes specified by command.
@@ -31,8 +32,8 @@ public interface TransactionService {
      * @param command dto with attributes for transaction creation
      * @return the successfully created transaction
      * @throws IllegalArgumentException if one of transaction participants
-     *                                  is not found by the unique identificator,
-     *                                  transaction between accounts with same identificator,
+     *                                  is not found by the unique identifier,
+     *                                  transaction between accounts with same identifier,
      *                                  amount for transaction is {@code null} or less than zero
      */
     Transaction createBy(CommandCreateTransaction command);

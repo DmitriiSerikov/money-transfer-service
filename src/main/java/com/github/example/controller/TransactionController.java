@@ -4,7 +4,6 @@ import com.github.example.dto.request.CommandCreateTransaction;
 import com.github.example.dto.response.TransactionData;
 import com.github.example.model.Transaction;
 import com.github.example.service.TransactionService;
-import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.*;
 import org.modelmapper.ModelMapper;
@@ -12,6 +11,7 @@ import org.modelmapper.ModelMapper;
 import javax.inject.Inject;
 import java.net.URI;
 import java.util.Collection;
+import java.util.UUID;
 
 @Controller("/transactions")
 public class TransactionController extends AbstractController<Transaction, TransactionData> {
@@ -32,7 +32,7 @@ public class TransactionController extends AbstractController<Transaction, Trans
 
     @Get(value = "/{transactionId}")
     @Produces
-    public HttpResponse<TransactionData> getTransactionById(final long transactionId, final HttpRequest request) {
+    public HttpResponse<TransactionData> getTransactionById(final UUID transactionId) {
         final Transaction transaction = transactionService.getById(transactionId);
         return HttpResponse.ok(convertToDto(transaction));
     }

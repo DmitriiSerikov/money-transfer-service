@@ -23,6 +23,7 @@ class InMemoryAccountDaoSpec extends Specification {
     LockHolder lockHolder = Mock()
 
     def account = new Account(ONE)
+    def someUUID = UUID.fromString "00000000-0000-0000-0000-000000000000"
 
     @Test
     def "should throw exception when account for insertion is null"() {
@@ -79,7 +80,7 @@ class InMemoryAccountDaoSpec extends Specification {
     @Test
     def "should throw exception when storage doesn't contains account for specified id"() {
         when:
-        inMemoryAccountDao.getBy 10
+        inMemoryAccountDao.getBy someUUID
 
         then:
         thrown EntityNotFoundException
@@ -149,18 +150,18 @@ class InMemoryAccountDaoSpec extends Specification {
     @Test
     def "should acquire lock using holder when try to lock account for specified id"() {
         when:
-        inMemoryAccountDao.lockBy 10
+        inMemoryAccountDao.lockBy someUUID
 
         then:
-        1 * lockHolder.acquire("Account_10")
+        1 * lockHolder.acquire({ it.contains(someUUID as String) } as String)
     }
 
     @Test
     def "should release lock using holder when try to unlock account for specified id"() {
         when:
-        inMemoryAccountDao.unlockBy 10
+        inMemoryAccountDao.unlockBy someUUID
 
         then:
-        1 * lockHolder.release("Account_10")
+        1 * lockHolder.release({ it.contains(someUUID as String) } as String)
     }
 }

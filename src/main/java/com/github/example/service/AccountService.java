@@ -6,6 +6,7 @@ import com.github.example.exception.EntityNotFoundException;
 import com.github.example.model.Account;
 
 import java.util.Collection;
+import java.util.UUID;
 
 
 public interface AccountService {
@@ -18,13 +19,13 @@ public interface AccountService {
     Collection<Account> getAll();
 
     /**
-     * Returns account by the unique identificator of account.
+     * Returns account by the unique identifier of account.
      *
-     * @param accountId the unique identificator of account
-     * @return the account found by unique identificator
-     * @throws EntityNotFoundException if account is not found by unique identificator
+     * @param accountId the unique identifier of account
+     * @return the account found by unique identifier
+     * @throws EntityNotFoundException if account is not found by unique identifier
      */
-    Account getById(long accountId);
+    Account getById(UUID accountId);
 
     /**
      * Creates account with attributes specified by command.

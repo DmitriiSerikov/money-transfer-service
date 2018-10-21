@@ -7,13 +7,14 @@ import com.github.example.model.Transaction;
 import com.github.example.model.Transaction.TransactionStatus;
 
 import java.util.Collection;
+import java.util.UUID;
 
 
 public interface TransactionDao {
 
     /**
      * Returns a collection of all transactions
-     * sorted by creation date-time from the storage
+     * sorted by creation date-time from the storage.
      *
      * @return all transactions in the storage
      */
@@ -33,19 +34,19 @@ public interface TransactionDao {
      *
      * @param transaction the transaction entity for storing into the storage
      * @return the transaction entity successfully persisted into the storage
-     * @throws EntityAlreadyExistsException if transaction with the unique identificator is already present
+     * @throws EntityAlreadyExistsException if transaction with the unique identifier is already present
      */
     Transaction insert(Transaction transaction);
 
     /**
-     * Returns transaction by the unique identificator of transaction
+     * Returns transaction by the unique identifier of transaction
      * in case it's already present in the storage.
      *
-     * @param transactionId the unique identificator of transaction
-     * @return returns transaction found by unique identificator
-     * @throws EntityNotFoundException if storage doesn't contain transaction with specified unique identificator
+     * @param transactionId the unique identifier of transaction
+     * @return returns transaction found by unique identifier
+     * @throws EntityNotFoundException if storage doesn't contain transaction with specified unique identifier
      */
-    Transaction getBy(long transactionId);
+    Transaction getBy(UUID transactionId);
 
     /**
      * Update transaction in the storage in case it already present
@@ -56,17 +57,17 @@ public interface TransactionDao {
     void update(Transaction transaction);
 
     /**
-     * Acquires the lock for transaction entity by the unique identificator.
+     * Acquires the lock for transaction entity by the unique identifier.
      *
-     * @param transactionId the unique identificator of transaction
+     * @param transactionId the unique identifier of transaction
      * @throws CouldNotAcquireLockException if lock is already acquired or thread is interrupted
      */
-    void lockBy(long transactionId);
+    void lockBy(UUID transactionId);
 
     /**
-     * Releases lock for transaction entity by the unique identificator.
+     * Releases lock for transaction entity by the unique identifier.
      *
-     * @param transactionId the unique identificator of transaction
+     * @param transactionId the unique identifier of transaction
      */
-    void unlockBy(long transactionId);
+    void unlockBy(UUID transactionId);
 }

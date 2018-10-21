@@ -4,6 +4,8 @@ import com.github.example.exception.CouldNotAcquireLockException;
 import com.github.example.exception.EntityNotFoundException;
 import com.github.example.model.Transaction.TransactionStatus;
 
+import java.util.UUID;
+
 
 public interface TransactionExecutionService {
 
@@ -17,12 +19,12 @@ public interface TransactionExecutionService {
 
     /**
      * Executes operations in accordance with transaction
-     * retrieved by the unique identificator of transaction.
+     * retrieved by the unique identifier of transaction.
      *
-     * @param transactionId the unique identificator of transaction for execution
+     * @param transactionId the unique identifier of transaction for execution
      * @throws CouldNotAcquireLockException if transaction is already locked by another thread
-     * @throws EntityNotFoundException      if transaction is not found by unique identificator
+     * @throws EntityNotFoundException      if transaction is not found by unique identifier
      * @throws IllegalStateException        if transaction is already executed
      */
-    void execute(long transactionId);
+    void execute(UUID transactionId);
 }

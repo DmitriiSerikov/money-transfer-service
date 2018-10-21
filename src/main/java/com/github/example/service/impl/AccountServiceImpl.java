@@ -9,6 +9,7 @@ import org.modelmapper.internal.util.Assert;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Collection;
+import java.util.UUID;
 
 @Singleton
 public class AccountServiceImpl implements AccountService {
@@ -26,7 +27,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Account getById(final long accountId) {
+    public Account getById(final UUID accountId) {
         return accountDao.getBy(accountId);
     }
 

@@ -2,38 +2,38 @@ package com.github.example.dto.response;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public class TransactionData implements Serializable {
     private static final long serialVersionUID = -1598024062752939479L;
 
-    private long id;
-    private long sourceAccountId;
-    private long targetAccountId;
+    private UUID id;
+    private UUID sourceAccountId;
+    private UUID targetAccountId;
     private BigDecimal amount;
     private String status;
-    private String errorMessage;
 
-    public long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
-    public long getSourceAccountId() {
+    public UUID getSourceAccountId() {
         return sourceAccountId;
     }
 
-    public void setSourceAccountId(long sourceAccountId) {
+    public void setSourceAccountId(UUID sourceAccountId) {
         this.sourceAccountId = sourceAccountId;
     }
 
-    public long getTargetAccountId() {
+    public UUID getTargetAccountId() {
         return targetAccountId;
     }
 
-    public void setTargetAccountId(long targetAccountId) {
+    public void setTargetAccountId(UUID targetAccountId) {
         this.targetAccountId = targetAccountId;
     }
 
@@ -51,13 +51,5 @@ public class TransactionData implements Serializable {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
     }
 }

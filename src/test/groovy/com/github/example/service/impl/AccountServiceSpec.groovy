@@ -23,6 +23,7 @@ class AccountServiceSpec extends Specification {
     AccountDao accountDao = Mock()
 
     def account = new Account(ONE)
+    def someUUID = UUID.fromString "00000000-0000-0000-0000-000000000000"
 
     @Test
     def "should return empty collection of accounts when accounts storage returns empty collection"() {
@@ -52,11 +53,10 @@ class AccountServiceSpec extends Specification {
     @Test
     def "should throw exception when accounts storage doesn't contains entity for given id and throws exception"() {
         given:
-        def accountId = 10
-        accountDao.getBy(accountId) >> { throw new EntityNotFoundException("Not found") }
+        accountDao.getBy(someUUID) >> { throw new EntityNotFoundException("Not found") }
 
         when:
-        accountService.getById accountId
+        accountService.getById someUUID
 
         then:
         thrown EntityNotFoundException
