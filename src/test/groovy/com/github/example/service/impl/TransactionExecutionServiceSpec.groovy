@@ -33,19 +33,20 @@ class TransactionExecutionServiceSpec extends Specification {
     def firstAccount = new Account(ONE)
     @Shared
     def secondAccount = new Account(ONE)
-    def sourceAccountId = firstAccount.id
-    def targetAccountId = secondAccount.id
-    def transaction = new Transaction(sourceAccountId, targetAccountId, ONE)
+    def firstAccountId = firstAccount.id
+    def secondAccountId = secondAccount.id
+    def transaction = new Transaction(firstAccountId, secondAccountId, ONE)
     def transactionId = transaction.id
     def limit = 10
 
     def setup() {
-        accountDao.getBy(sourceAccountId) >> firstAccount
-        accountDao.getBy(targetAccountId) >> secondAccount
+        transactionDao.getBy(transactionId) >> transaction
+        accountDao.getBy(firstAccountId) >> firstAccount
+        accountDao.getBy(secondAccountId) >> secondAccount
     }
 
     @Test
-    def "should not execute any transaction when transaction storage doesn't contains pending transactions"() {
+    def "should not execute any transactions when transaction storage doesn't contains pending transactions"() {
         given:
         transactionDao.findPending(limit) >> []
 
@@ -57,92 +58,185 @@ class TransactionExecutionServiceSpec extends Specification {
     }
 
     @Test
-    def "should execute transactions with same source account sequentially when transaction storage contains pending transactions only with one source account"() {
+    def "should execute transactions for the same source account sequentially when transaction storage contains pending transactions only for one source account"() {
         given:
-        transactionDao.findPending(limit) >> [transaction, transaction]
+        def transactionWithSameSourceAccount = new Transaction(firstAccountId, secondAccountId, ONE)
+        transactionDao.getBy(transactionWithSameSourceAccount.id) >> transactionWithSameSourceAccount
+        and:
+        transactionDao.findPending(limit) >> [transaction, transactionWithSameSourceAccount]
 
         when:
         executionService.executePending limit
 
         then:
-        2 * transactionDao.lockBy(transactionId)
+        1 * transactionDao.lockBy(transactionId)
+        1 * transactionDao.lockBy(transactionWithSameSourceAccount.id)
     }
 
     @Test
-    def "should not throw exception when couldn't lock one of transaction during execution of pending transactions"() {
+    def "should execute transactions for the different accounts in parallel when transaction storage contains pending transactions between different accounts"() {
         given:
-        transactionDao.findPending(limit) >> [transaction]
+        def transactionWithAnotherSourceAccount = new Transaction(secondAccountId, firstAccountId, ONE)
+        transactionDao.getBy(transactionWithAnotherSourceAccount.id) >> transactionWithAnotherSourceAccount
         and:
-        transactionDao.lockBy(transactionId) >> { throw new CouldNotAcquireLockException("Failed") }
+        transactionDao.findPending(limit) >> [transaction, transactionWithAnotherSourceAccount]
+
+        when:
+        executionService.executePending limit
+
+        then:
+        2 * transactionDao.lockBy(*_)
+    }
+
+    @Test
+    def "should not throw exception and stop execution of pending transactions when couldn't lock one of transactions"() {
+        given:
+        def lockedTransaction = new Transaction(firstAccountId, secondAccountId, ONE)
+        def lockedTransactionId = lockedTransaction.id
+        transactionDao.findPending(limit) >> [lockedTransaction, transaction]
+        transactionDao.getBy(lockedTransactionId) >> lockedTransaction
+        and:
+        transactionDao.lockBy(lockedTransactionId) >> { throw new CouldNotAcquireLockException("Failed") }
 
         when:
         executionService.executePending limit
 
         then:
         notThrown CouldNotAcquireLockException
+        1 * transactionDao.lockBy(transactionId)
+        1 * transactionDao.unlockBy(transactionId)
     }
 
     @Test
-    def "should not throw exception when one of pending transactions already executed during execution of pending transactions"() {
+    def "should not throw exception and stop execution when one of transactions is not found during execution of pending transactions"() {
         given:
-        def executedTransaction = transaction.executed()
-        transactionDao.findPending(limit) >> [executedTransaction]
+        def phantomTransaction = new Transaction(firstAccountId, secondAccountId, ONE)
+        def phantomTransactionId = phantomTransaction.id
+        transactionDao.findPending(limit) >> [phantomTransaction, transaction]
+        and:
+        transactionDao.getBy(phantomTransactionId) >> { throw new EntityNotFoundException("Not found") }
+
+        when:
+        executionService.executePending limit
+
+        then:
+        notThrown EntityNotFoundException
+        1 * transactionDao.lockBy(transactionId)
+        1 * transactionDao.unlockBy(transactionId)
+    }
+
+    @Test
+    def "should not throw exception and stop execution when one of transactions already executed during execution of pending transactions"() {
+        given:
+        def executedTransaction = new Transaction(firstAccountId, secondAccountId, ONE).executed()
+        def executedTransactionId = executedTransaction.id
+        transactionDao.findPending(limit) >> [executedTransaction, transaction]
+        and:
+        transactionDao.getBy(executedTransactionId) >> executedTransaction
 
         when:
         executionService.executePending limit
 
         then:
         notThrown IllegalStateException
-    }
-
-    @Test
-    def "should throw exception when try executes not pending transaction"() {
-        given:
-        def executedTransaction = transaction.executed()
-
-        when:
-        executionService.execute executedTransaction
-
-        then:
-        thrown IllegalStateException
-    }
-
-    @Test
-    def "should lock transaction for id by transactions storage when executes transaction"() {
-        when:
-        executionService.execute transaction
-
-        then:
         1 * transactionDao.lockBy(transactionId)
-        interaction { ensureResourcesUnlockedBy sourceAccountId, targetAccountId, transactionId }
+        1 * transactionDao.unlockBy(transactionId)
     }
 
     @Test
-    def "should throw exception when transactions storage failed to lock transaction and throws exception"() {
+    def "should throw exception when transactions storage failed to lock transaction by id and throws exception"() {
         given:
-        def transactionId = transaction.id
-        and:
         transactionDao.lockBy(transactionId) >> { throw new CouldNotAcquireLockException("Failed") }
 
         when:
-        executionService.execute transaction
+        executionService.execute transactionId
 
         then:
         thrown CouldNotAcquireLockException
     }
 
     @Test
-    def "should primarily lock account with lower id and then with greater id by accounts storage when executes transaction"() {
+    def "should lock transaction by id when executes transaction by id"() {
+        when:
+        executionService.execute transactionId
+
+        then:
+        1 * transactionDao.lockBy(transactionId)
+        interaction { ensureResourcesUnlockedBy firstAccountId, secondAccountId, transactionId }
+    }
+
+    @Test
+    def "should throw exception when transaction is not found in transactions storage by specified id"() {
         given:
-        def transaction = new Transaction(sourceId, targetId, ONE)
+        def notExistTransactionId = 0
+        transactionDao.getBy(notExistTransactionId) >> { throw new EntityNotFoundException("Not found") }
 
         when:
-        executionService.execute transaction
+        executionService.execute notExistTransactionId
+
+        then:
+        thrown EntityNotFoundException
+    }
+
+    @Test
+    def "should throw exception when transaction with specified id is already executed"() {
+        given:
+        def executedTransaction = new Transaction(firstAccountId, secondAccountId, ONE).executed()
+        def executedTransactionId = executedTransaction.id
+        and:
+        transactionDao.getBy(executedTransactionId) >> executedTransaction
+
+        when:
+        executionService.execute executedTransactionId
+
+        then:
+        thrown IllegalStateException
+    }
+
+    @Test
+    def "should not throw exception when accounts storage failed to lock source account by id and throws exception"() {
+        given:
+        def sourceAccountId = transaction.sourceAccountId
+        and:
+        accountDao.lockBy(sourceAccountId) >> { throw new CouldNotAcquireLockException("Failed") }
+
+        when:
+        executionService.execute transactionId
+
+        then:
+        notThrown CouldNotAcquireLockException
+        interaction { ensureResourcesUnlockedBy firstAccountId, secondAccountId, transactionId }
+    }
+
+    @Test
+    def "should not throw exception when accounts storage failed to lock target account by id and throws exception"() {
+        given:
+        def targetAccountId = transaction.targetAccountId
+        and:
+        accountDao.lockBy(targetAccountId) >> { throw new CouldNotAcquireLockException("Failed") }
+
+        when:
+        executionService.execute transactionId
+
+        then:
+        notThrown CouldNotAcquireLockException
+        interaction { ensureResourcesUnlockedBy firstAccountId, secondAccountId, transactionId }
+    }
+
+    @Test
+    def "should primarily lock account with lower id and then with greater id when executes transaction"() {
+        given:
+        def transaction = new Transaction(sourceId, targetId, ONE)
+        def transactionId = transaction.id
+        transactionDao.getBy(transactionId) >> transaction
+
+        when:
+        executionService.execute transactionId
 
         then:
         1 * accountDao.lockBy(firstLock)
         1 * accountDao.lockBy(secondLock)
-        interaction { ensureResourcesUnlockedBy sourceAccountId, targetAccountId, transaction.id }
+        interaction { ensureResourcesUnlockedBy firstAccountId, secondAccountId, transactionId }
 
         where:
         sourceId         | targetId         || firstLock       | secondLock
@@ -151,35 +245,39 @@ class TransactionExecutionServiceSpec extends Specification {
     }
 
     @Test
-    def "should mark transaction as failed when accounts storage not found source account and throws exception"() {
+    def "should mark transaction as failed when accounts storage doesn't contains source account for specified id and throws exception"() {
         given:
-        def sourceAccountId = 10
-        def transaction = new Transaction(sourceAccountId, targetAccountId, ONE)
+        def notExistSourceAccountId = 1000
+        def transaction = new Transaction(notExistSourceAccountId, secondAccountId, ONE)
+        def transactionId = transaction.id
+        transactionDao.getBy(transactionId) >> transaction
         and:
-        accountDao.getBy(sourceAccountId) >> { throw new EntityNotFoundException("Not found") }
+        accountDao.getBy(notExistSourceAccountId) >> { throw new EntityNotFoundException("Not found") }
 
         when:
-        executionService.execute transaction
+        executionService.execute transactionId
 
         then:
         1 * transactionDao.update({ it.status == FAILED } as Transaction)
-        interaction { ensureResourcesUnlockedBy sourceAccountId, targetAccountId, transaction.id }
+        interaction { ensureResourcesUnlockedBy notExistSourceAccountId, secondAccountId, transactionId }
     }
 
     @Test
-    def "should mark transaction as failed when accounts storage not found target account and throws exception"() {
+    def "should mark transaction as failed when accounts storage doesn't contains target account for specified id and throws exception"() {
         given:
-        def targetAccountId = 10
-        def transaction = new Transaction(sourceAccountId, targetAccountId, ONE)
+        def notExistTargetAccountId = 10
+        def transaction = new Transaction(firstAccountId, notExistTargetAccountId, ONE)
+        def transactionId = transaction.id
+        transactionDao.getBy(transactionId) >> transaction
         and:
-        accountDao.getBy(targetAccountId) >> { throw new EntityNotFoundException("Not found") }
+        accountDao.getBy(notExistTargetAccountId) >> { throw new EntityNotFoundException("Not found") }
 
         when:
-        executionService.execute transaction
+        executionService.execute transactionId
 
         then:
         1 * transactionDao.update({ it.status == FAILED } as Transaction)
-        interaction { ensureResourcesUnlockedBy sourceAccountId, targetAccountId, transaction.id }
+        interaction { ensureResourcesUnlockedBy firstAccountId, notExistTargetAccountId, transactionId }
     }
 
     @Test
@@ -187,22 +285,24 @@ class TransactionExecutionServiceSpec extends Specification {
         given:
         def sourceAccount = new Account(sourceAccountBalance as BigDecimal)
         def sourceAccountId = sourceAccount.id
-        def transaction = new Transaction(sourceAccountId, targetAccountId, amount as BigDecimal)
+        def transaction = new Transaction(sourceAccountId, secondAccountId, amount as BigDecimal)
+        def transactionId = transaction.id
+        transactionDao.getBy(transactionId) >> transaction
         and:
         accountDao.getBy(sourceAccountId) >> sourceAccount
 
         when:
-        executionService.execute transaction
+        executionService.execute transactionId
 
         then:
         1 * transactionDao.update({ it.status == FAILED } as Transaction)
-        interaction { ensureResourcesUnlockedBy sourceAccountId, targetAccountId, transaction.id }
+        interaction { ensureResourcesUnlockedBy sourceAccountId, secondAccountId, transactionId }
 
         where:
         sourceAccountBalance | amount
-        1                    | 2
-        5                    | 10
-        10                   | 20
+        1                    | 1.0001
+        5                    | 50
+        10                   | 10.5
     }
 
     @Test
@@ -210,19 +310,21 @@ class TransactionExecutionServiceSpec extends Specification {
         given:
         def sourceAccount = new Account(sourceAccountBalance as BigDecimal)
         def sourceAccountId = sourceAccount.id
-        def transaction = new Transaction(sourceAccountId, targetAccountId, amount as BigDecimal)
+        def transaction = new Transaction(sourceAccountId, secondAccountId, amount as BigDecimal)
+        def transactionId = transaction.id
+        transactionDao.getBy(transactionId) >> transaction
         and:
         accountDao.getBy(sourceAccountId) >> sourceAccount
 
         when:
-        executionService.execute transaction
+        executionService.execute transactionId
 
         then:
         1 * accountDao.update({
             it == sourceAccount
             it.balance == expectedBalance
         } as Account)
-        interaction { ensureResourcesUnlockedBy sourceAccountId, targetAccountId, transaction.id }
+        interaction { ensureResourcesUnlockedBy sourceAccountId, secondAccountId, transactionId }
 
         where:
         sourceAccountBalance | amount || expectedBalance
@@ -236,19 +338,21 @@ class TransactionExecutionServiceSpec extends Specification {
         given:
         def targetAccount = new Account(targetAccountBalance as BigDecimal)
         def targetAccountId = targetAccount.id
-        def transaction = new Transaction(sourceAccountId, targetAccountId, amount as BigDecimal)
+        def transaction = new Transaction(firstAccountId, targetAccountId, amount as BigDecimal)
+        def transactionId = transaction.id
+        transactionDao.getBy(transactionId) >> transaction
         and:
         accountDao.getBy(targetAccountId) >> targetAccount
 
         when:
-        executionService.execute transaction
+        executionService.execute transactionId
 
         then:
         1 * accountDao.update({
             it == targetAccount
             it.balance == expectedBalance
         } as Account)
-        interaction { ensureResourcesUnlockedBy sourceAccountId, targetAccountId, transaction.id }
+        interaction { ensureResourcesUnlockedBy firstAccountId, targetAccountId, transactionId }
 
         where:
         targetAccountBalance | amount || expectedBalance
@@ -260,11 +364,11 @@ class TransactionExecutionServiceSpec extends Specification {
     @Test
     def "should mark transaction as succeed when transaction executed successfully"() {
         when:
-        executionService.execute transaction
+        executionService.execute transactionId
 
         then:
         1 * transactionDao.update({ it.status == SUCCESS } as Transaction)
-        interaction { ensureResourcesUnlockedBy sourceAccountId, targetAccountId, transactionId }
+        interaction { ensureResourcesUnlockedBy firstAccountId, secondAccountId, transactionId }
     }
 
     def ensureResourcesUnlockedBy(long sourceAccountId, long targetAccountId, long transactionId) {

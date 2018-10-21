@@ -74,7 +74,21 @@ class InMemoryTransactionDaoSpec extends Specification {
 
         then:
         !result.empty
-        result[0] == transaction
+    }
+
+    @Test
+    def "should return collection of all stored transactions sorted by creation date-time when storage contains more than one transaction"() {
+        given:
+        def createdLaterTransaction = new Transaction(10, 20, ONE)
+        and:
+        inMemoryTransactionDao.insert transaction
+        inMemoryTransactionDao.insert createdLaterTransaction
+
+        when:
+        def result = inMemoryTransactionDao.findAll()
+
+        then:
+        result[0].creationTime < result[1].creationTime
     }
 
     @Test
@@ -100,12 +114,27 @@ class InMemoryTransactionDaoSpec extends Specification {
         def result = inMemoryTransactionDao.findPending 3
 
         then:
-        !result.empty
+        result.size() == 1
         result[0].status == PENDING
     }
 
     @Test
-    def "should return limited collection of pending transactions when storage has more then specified limit of pending transactions"() {
+    def "should return collection of pending transactions sorted by creation date-time when storage contains more than one pending transaction"() {
+        given:
+        def createdLaterPendingTransaction = new Transaction(10, 20, ONE)
+        and:
+        inMemoryTransactionDao.insert transaction
+        inMemoryTransactionDao.insert createdLaterPendingTransaction
+
+        when:
+        def result = inMemoryTransactionDao.findPending 3
+
+        then:
+        result[0].creationTime < result[1].creationTime
+    }
+
+    @Test
+    def "should return limited collection of pending transactions when storage contains more pending transactions then specified by limit"() {
         given:
         def anotherPendingTransaction = new Transaction(10, 20, ONE)
         and:
