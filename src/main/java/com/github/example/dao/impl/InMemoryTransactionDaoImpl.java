@@ -10,18 +10,18 @@ import org.modelmapper.internal.util.Assert;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 import static com.github.example.model.Transaction.TransactionStatus.PENDING;
-import static java.util.Collections.unmodifiableCollection;
+import static java.util.Comparator.comparing;
 
 @Singleton
 public class InMemoryTransactionDaoImpl implements TransactionDao {
 
-    private final Map<Long, Transaction> storage = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Long, Transaction> storage = new ConcurrentHashMap<>();
     private final LockHolder lockHolder;
 
     @Inject
@@ -31,7 +31,9 @@ public class InMemoryTransactionDaoImpl implements TransactionDao {
 
     @Override
     public Collection<Transaction> findAll() {
-        return unmodifiableCollection(storage.values());
+        return storage.values().stream()
+                .sorted(comparing(Transaction::getCreationTime))
+                .collect(Collectors.toList());
     }
 
     @Override

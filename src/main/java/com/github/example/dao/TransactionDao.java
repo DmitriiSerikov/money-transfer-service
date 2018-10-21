@@ -12,14 +12,16 @@ import java.util.Collection;
 public interface TransactionDao {
 
     /**
-     * Returns a collection of all transactions from the storage.
+     * Returns a collection of all transactions
+     * sorted by creation date-time from the storage
      *
      * @return all transactions in the storage
      */
     Collection<Transaction> findAll();
 
     /**
-     * Returns a collection of transactions limited by {@code limit}
+     * Returns a collection of transactions
+     * sorted by creation date-time and limited by {@code limit}
      * with {@link TransactionStatus#PENDING} status from the storage.
      *
      * @return transactions int the storage filtered by predicate
