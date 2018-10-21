@@ -3,6 +3,7 @@ package com.github.example.service.impl;
 import com.github.example.dao.AccountDao;
 import com.github.example.dao.TransactionDao;
 import com.github.example.exception.CouldNotAcquireLockException;
+import com.github.example.exception.EntityNotFoundException;
 import com.github.example.model.Account;
 import com.github.example.model.Transaction;
 import com.github.example.service.TransactionExecutionService;
@@ -36,28 +37,31 @@ public class TransactionExecutionServiceImpl implements TransactionExecutionServ
     }
 
     @Override
-    public void executePending(int limit) {
+    public void executePending(final int limit) {
         final Collection<Transaction> pendingTransactions = transactionDao.findPending(limit);
         if (CollectionUtils.isNotEmpty(pendingTransactions)) {
-            final Map<Long, List<Transaction>> txGroupedBySourceAccountId = pendingTransactions.stream()
-                    .collect(groupingBy(Transaction::getSourceAccountId));
-            txGroupedBySourceAccountId.values().parallelStream()
-                    .forEach(this::processWithOrdering);
+            LOGGER.info("Found {} pending transactions for execution, limit for bulk operation is {}", pendingTransactions.size(), limit);
+            getTxGroupedBySourceAccount(pendingTransactions).entrySet()
+                    .parallelStream()
+                    .forEach(entry -> executeWithOrdering(entry.getKey(), entry.getValue()));
         }
     }
 
     @Override
-    public void execute(final Transaction transaction) {
+    public void execute(final long transactionId) {
+        LOGGER.info("Execute transaction with id:{} at {}", transactionId, Instant.now());
+        transactionDao.lockBy(transactionId);
+
+        Transaction transaction = transactionDao.getBy(transactionId);
         checkTransactionStatus(transaction);
 
-        final long transactionId = transaction.getId();
         final long sourceAccountId = transaction.getSourceAccountId();
         final long targetAccountId = transaction.getTargetAccountId();
         final BigDecimal amount = transaction.getAmount();
 
-        transactionDao.lockBy(transactionId);
         try {
             acquireLocksWithOrdering(sourceAccountId, targetAccountId);
+            LOGGER.info("Accounts with source id:{} and target id:{} locked during execution of transaction with id:{}", sourceAccountId, targetAccountId, transactionId);
 
             final Account sourceAccount = accountDao.getBy(sourceAccountId);
             final Account targetAccount = accountDao.getBy(targetAccountId);
@@ -66,7 +70,7 @@ public class TransactionExecutionServiceImpl implements TransactionExecutionServ
             accountDao.update(targetAccount.deposit(amount));
             transactionDao.update(transaction.executed());
         } catch (CouldNotAcquireLockException ex) {
-            LOGGER.info("Execution of the transaction with id:{} will be delayed due to the lock of one of the accounts", transactionId, ex);
+            LOGGER.info("Execution of the transaction with id:{} will be delayed due to the lock on one of the accounts", transactionId, ex);
         } catch (Exception ex) {
             LOGGER.error("Failed to execute transaction with id:{} between accounts with source id:{} and target id:{}", transactionId, sourceAccountId, targetAccountId, ex);
             transactionDao.update(transaction.failed(ex.getMessage()));
@@ -77,17 +81,29 @@ public class TransactionExecutionServiceImpl implements TransactionExecutionServ
         }
     }
 
-    private void processWithOrdering(final List<Transaction> transactions) {
+    private Map<Long, List<Transaction>> getTxGroupedBySourceAccount(final Collection<Transaction> transactions) {
+        return transactions.stream()
+                .collect(groupingBy(Transaction::getSourceAccountId));
+    }
+
+    private void executeWithOrdering(final long sourceAccountId, final List<Transaction> transactions) {
+        LOGGER.info("Start execution of {} transactions with source account id:{}", transactions.size(), sourceAccountId);
         transactions.stream()
-                .peek(transaction -> LOGGER.info("Performing transaction with id:{} at {}", transaction.getId(), Instant.now()))
+                .map(Transaction::getId)
                 .forEach(this::executePendingTransaction);
     }
 
-    private void executePendingTransaction(final Transaction transaction) {
+    private void executePendingTransaction(final long transactionId) {
         try {
-            execute(transaction);
-        } catch (CouldNotAcquireLockException | IllegalStateException ex) {
-            LOGGER.error("Performing of the transaction with id:{} failed", transaction.getId(), ex);
+            execute(transactionId);
+        } catch (CouldNotAcquireLockException | EntityNotFoundException | IllegalStateException ex) {
+            LOGGER.error("Execution of transaction with id:{} failed", transactionId, ex);
+        }
+    }
+
+    private void checkTransactionStatus(final Transaction transaction) {
+        if (!PENDING.equals(transaction.getStatus())) {
+            throw new IllegalStateException("Transaction is already performed with id:" + transaction.getId());
         }
     }
 
@@ -105,11 +121,5 @@ public class TransactionExecutionServiceImpl implements TransactionExecutionServ
 
         accountDao.lockBy(firstLock);
         accountDao.lockBy(secondLock);
-    }
-
-    private void checkTransactionStatus(final Transaction transaction) {
-        if (!PENDING.equals(transaction.getStatus())) {
-            throw new IllegalStateException("Transaction is already performed with id:" + transaction.getId());
-        }
     }
 }

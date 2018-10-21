@@ -1,7 +1,7 @@
 package com.github.example.service;
 
 import com.github.example.exception.CouldNotAcquireLockException;
-import com.github.example.model.Transaction;
+import com.github.example.exception.EntityNotFoundException;
 import com.github.example.model.Transaction.TransactionStatus;
 
 
@@ -16,11 +16,13 @@ public interface TransactionExecutionService {
     void executePending(int limit);
 
     /**
-     * Executes money transfer operation in accordance with transaction.
+     * Executes operations in accordance with transaction
+     * retrieved by the unique identificator of transaction.
      *
-     * @param transaction the transaction for execution
+     * @param transactionId the unique identificator of transaction for execution
      * @throws CouldNotAcquireLockException if transaction is already locked by another thread
+     * @throws EntityNotFoundException      if transaction is not found by unique identificator
      * @throws IllegalStateException        if transaction is already executed
      */
-    void execute(Transaction transaction);
+    void execute(long transactionId);
 }
