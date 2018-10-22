@@ -18,7 +18,7 @@ import static java.util.Optional.ofNullable;
 public class LockHolderImpl implements LockHolder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LockHolderImpl.class);
-    private static final long DEFAULT_TIMEOUT = 5L;
+    private static final long DEFAULT_TIMEOUT = 10L;
 
     private final Map<String, Lock> locks = new ConcurrentHashMap<>();
 
@@ -35,8 +35,8 @@ public class LockHolderImpl implements LockHolder {
     private Lock getAcquiredLock(final String lockId, final Lock previousValue) {
         try {
             final Lock lock = ofNullable(previousValue).orElseGet(ReentrantLock::new);
-            if (!lock.tryLock(DEFAULT_TIMEOUT, TimeUnit.SECONDS)) {
-                throw new CouldNotAcquireLockException("Could not acquire lock for key:" + lockId);
+            if (!lock.tryLock(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS)) {
+                throw new CouldNotAcquireLockException("Couldn't acquire lock for key:" + lockId);
             }
             LOGGER.info("Lock acquired for id:{}", lockId);
             return lock;

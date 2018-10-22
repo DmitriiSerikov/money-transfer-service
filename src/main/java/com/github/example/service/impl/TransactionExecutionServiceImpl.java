@@ -52,36 +52,41 @@ public class TransactionExecutionServiceImpl implements TransactionExecutionServ
     @Override
     public void execute(final UUID transactionId) {
         Assert.notNull(transactionId, "Transaction identifier");
-        LOGGER.info("Execute transaction with id:{} at {}", transactionId, Instant.now());
+
+        LOGGER.info("Start execution of transaction with id:{} at {}", transactionId, Instant.now());
         transactionDao.lockBy(transactionId);
 
-        Transaction transaction = transactionDao.getBy(transactionId);
-        checkTransactionStatus(transaction);
-
-        final UUID sourceAccountId = transaction.getSourceAccountId();
-        final UUID targetAccountId = transaction.getTargetAccountId();
-        final BigDecimal amount = transaction.getAmount();
-
         try {
-            acquireLocksWithOrdering(sourceAccountId, targetAccountId);
-            LOGGER.info("Accounts with source id:{} and target id:{} locked during execution of transaction with id:{}", sourceAccountId, targetAccountId, transactionId);
+            Transaction transaction = transactionDao.getBy(transactionId);
+            checkTransactionStatus(transaction);
 
-            final Account sourceAccount = accountDao.getBy(sourceAccountId);
-            final Account targetAccount = accountDao.getBy(targetAccountId);
+            final UUID sourceAccountId = transaction.getSourceAccountId();
+            final UUID targetAccountId = transaction.getTargetAccountId();
+            final BigDecimal amount = transaction.getAmount();
 
-            accountDao.update(sourceAccount.withdraw(amount));
-            accountDao.update(targetAccount.deposit(amount));
-            transactionDao.update(transaction.executed());
+            try {
+                acquireLocksWithOrdering(sourceAccountId, targetAccountId);
+                LOGGER.info("Accounts with source id:{} and target id:{} locked during execution of transaction with id:{}", sourceAccountId, targetAccountId, transactionId);
+
+                final Account sourceAccount = accountDao.getBy(sourceAccountId);
+                final Account targetAccount = accountDao.getBy(targetAccountId);
+
+                accountDao.update(sourceAccount.withdraw(amount));
+                accountDao.update(targetAccount.deposit(amount));
+                transactionDao.update(transaction.executed());
+            } catch (Exception ex) {
+                LOGGER.error("Failed to execute transaction with id:{} between accounts with source id:{} and target id:{}", transactionId, sourceAccountId, targetAccountId, ex);
+                transactionDao.update(transaction.failed(ex.getMessage()));
+            } finally {
+                accountDao.unlockBy(sourceAccountId);
+                accountDao.unlockBy(targetAccountId);
+            }
         } catch (CouldNotAcquireLockException ex) {
             LOGGER.info("Execution of the transaction with id:{} will be delayed due to the lock on one of the accounts", transactionId, ex);
-        } catch (Exception ex) {
-            LOGGER.error("Failed to execute transaction with id:{} between accounts with source id:{} and target id:{}", transactionId, sourceAccountId, targetAccountId, ex);
-            transactionDao.update(transaction.failed(ex.getMessage()));
         } finally {
-            accountDao.unlockBy(sourceAccountId);
-            accountDao.unlockBy(targetAccountId);
             transactionDao.unlockBy(transactionId);
         }
+        LOGGER.info("Finished execution of transaction with id:{} at {}", transactionId, Instant.now());
     }
 
     private Map<UUID, List<Transaction>> getTxGroupedBySourceAccount(final Collection<Transaction> transactions) {
@@ -114,7 +119,7 @@ public class TransactionExecutionServiceImpl implements TransactionExecutionServ
         final UUID firstLock;
         final UUID secondLock;
 
-        if (sourceAccountId.compareTo(targetAccountId) < 1) {
+        if (sourceAccountId.compareTo(targetAccountId) < 0) {
             firstLock = sourceAccountId;
             secondLock = targetAccountId;
         } else {
