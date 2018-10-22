@@ -20,6 +20,9 @@ import spock.lang.Specification
 @Category(IntegrationTest)
 class TransactionControllerSpec extends Specification {
 
+    static final TRANSACTION_RESOURCE_URI = "/api/1.0/transactions"
+    static final ACCOUNT_RESOURCE_URI = "/api/1.0/accounts"
+
     @Shared
     @AutoCleanup
     EmbeddedServer embeddedServer = ApplicationContext.run(EmbeddedServer)
@@ -27,7 +30,7 @@ class TransactionControllerSpec extends Specification {
     @AutoCleanup
     HttpClient client = embeddedServer.applicationContext.createBean(HttpClient, embeddedServer.getURL())
 
-    def notExistAccountId = UUID.fromString "550e8400-e29b-41d4-a716-446655440000"
+    def notExistAccountId = UUID.fromString "a-b-c-d-e"
     def sourceAccountId
     def targetAccountId
 
@@ -39,7 +42,7 @@ class TransactionControllerSpec extends Specification {
     @Test
     def "should return empty collection with 200 status code when transactions not exists yet"() {
         given:
-        def request = HttpRequest.GET "/transactions"
+        def request = HttpRequest.GET TRANSACTION_RESOURCE_URI
 
         when:
         def response = client.toBlocking().exchange request, Collection.class
@@ -52,7 +55,7 @@ class TransactionControllerSpec extends Specification {
     @Test
     def "should return error response with 404 status code when transaction with specified id doesn't exist"() {
         given:
-        def request = HttpRequest.GET "/transactions/550e8400-e29b-41d4-a716-446655440000"
+        def request = HttpRequest.GET TRANSACTION_RESOURCE_URI + "/a-b-c-d-e"
 
         when:
         client.toBlocking().exchange request
@@ -60,13 +63,13 @@ class TransactionControllerSpec extends Specification {
         then:
         def ex = thrown HttpClientResponseException
         ex.status == HttpStatus.NOT_FOUND
-        ex.message == "Transaction not exists for id:550e8400-e29b-41d4-a716-446655440000"
+        ex.message == "Transaction not exists for id:0000000a-000b-000c-000d-00000000000e"
     }
 
     @Test
     def "should return error response with 400 status code when trying to get transaction with incorrect id format"() {
         given:
-        def request = HttpRequest.GET "/transactions/1"
+        def request = HttpRequest.GET TRANSACTION_RESOURCE_URI + "/1"
 
         when:
         client.toBlocking().exchange request
@@ -85,7 +88,7 @@ class TransactionControllerSpec extends Specification {
         then:
         def ex = thrown HttpClientResponseException
         ex.status == HttpStatus.BAD_REQUEST
-        ex.message == "Account not exists for id:550e8400-e29b-41d4-a716-446655440000"
+        ex.message == "Account not exists for id:0000000a-000b-000c-000d-00000000000e"
     }
 
     @Test
@@ -96,7 +99,7 @@ class TransactionControllerSpec extends Specification {
         then:
         def ex = thrown HttpClientResponseException
         ex.status == HttpStatus.BAD_REQUEST
-        ex.message == "Account not exists for id:550e8400-e29b-41d4-a716-446655440000"
+        ex.message == "Account not exists for id:0000000a-000b-000c-000d-00000000000e"
     }
 
     @Test
@@ -136,14 +139,14 @@ class TransactionControllerSpec extends Specification {
     def "should return 202 status code and location header when create transaction by valid command"() {
         given:
         def command = new CommandCreateTransaction(sourceAccountId: sourceAccountId, targetAccountId: targetAccountId, amount: 10)
-        def request = HttpRequest.POST "/transactions", command
+        def request = HttpRequest.POST TRANSACTION_RESOURCE_URI, command
 
         when:
         def response = client.toBlocking().exchange request, TransactionData.class
 
         then:
         response.status == HttpStatus.ACCEPTED
-        response.header("Location").contains "/transactions/"
+        response.header("Location").contains TRANSACTION_RESOURCE_URI
     }
 
     @Test
@@ -152,7 +155,7 @@ class TransactionControllerSpec extends Specification {
         def amount = 100
         def transactionId = createTransaction sourceAccountId, targetAccountId, amount
         and:
-        def request = HttpRequest.GET "/transactions/" + transactionId
+        def request = HttpRequest.GET TRANSACTION_RESOURCE_URI + "/" + transactionId
 
         when:
         def response = client.toBlocking().exchange request, TransactionData.class
@@ -163,12 +166,13 @@ class TransactionControllerSpec extends Specification {
         response.body().sourceAccountId == sourceAccountId
         response.body().targetAccountId == targetAccountId
         response.body().amount == amount
+        response.body().createdAt == response.body().updatedAt
     }
 
     @Test
     def "should return collection of transactions data with 200 status code when transactions exists"() {
         given:
-        def request = HttpRequest.GET "/transactions"
+        def request = HttpRequest.GET TRANSACTION_RESOURCE_URI
         and:
         createTransaction sourceAccountId, targetAccountId, 10
 
@@ -182,16 +186,16 @@ class TransactionControllerSpec extends Specification {
 
     def createTransaction(def sourceAccountId, def targetAccountId, def amount) {
         def command = new CommandCreateTransaction(sourceAccountId: sourceAccountId, targetAccountId: targetAccountId, amount: amount)
-        def request = HttpRequest.POST "/transactions", command
+        def request = HttpRequest.POST TRANSACTION_RESOURCE_URI, command
 
         def response = client.toBlocking().exchange request, TransactionData.class
 
-        UUID.fromString response.header("Location") - "/transactions/"
+        UUID.fromString response.header("Location") - (TRANSACTION_RESOURCE_URI + "/")
     }
 
     def createAccount(def initialBalance) {
         def command = new CommandCreateAccount(initialBalance: initialBalance)
-        def request = HttpRequest.POST "/accounts", command
+        def request = HttpRequest.POST ACCOUNT_RESOURCE_URI, command
 
         def response = client.toBlocking().exchange request, AccountData.class
 

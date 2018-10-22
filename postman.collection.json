@@ -14,7 +14,7 @@
         {
           "name": "Get all accounts",
           "request": {
-            "url": "{{url}}/accounts",
+            "url": "{{url}}/api/{{api_version}}/accounts",
             "method": "GET",
             "header": [],
             "body": {
@@ -28,7 +28,7 @@
         {
           "name": "Get account by unique identificator",
           "request": {
-            "url": "{{url}}/accounts/1",
+            "url": "{{url}}/api/{{api_version}}/accounts/980f7b4c-7a92-4cc7-a1e2-a137cbe1add9",
             "method": "GET",
             "header": [],
             "body": {
@@ -42,7 +42,7 @@
         {
           "name": "Create new account",
           "request": {
-            "url": "{{url}}/accounts",
+            "url": "{{url}}/api/{{api_version}}/accounts",
             "method": "POST",
             "header": [
               {
@@ -68,7 +68,7 @@
         {
           "name": "Get all transcations",
           "request": {
-            "url": "{{url}}/transactions",
+            "url": "{{url}}/api/{{api_version}}/transactions",
             "method": "GET",
             "header": [],
             "body": {
@@ -82,7 +82,7 @@
         {
           "name": "Get transcation by unique identificator",
           "request": {
-            "url": "{{url}}/transactions/1",
+            "url": "{{url}}/api/{{api_version}}/transactions/031e6659-200e-404b-bdc7-b0200faf856f",
             "method": "GET",
             "header": [],
             "body": {
@@ -96,7 +96,7 @@
         {
           "name": "Create new transaction",
           "request": {
-            "url": "{{url}}/transactions",
+            "url": "{{url}}/api/{{api_version}}/transactions",
             "method": "POST",
             "header": [
               {
@@ -107,7 +107,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n\t\"sourceAccountId\": 7,\n\t\"targetAccountId\": 3,\n\t\"amount\": 10\n}"
+              "raw": "{\n\t\"sourceAccountId\": \"980f7b4c-7a92-4cc7-a1e2-a137cbe1add9\",\n\t\"targetAccountId\": \"54560954-d242-497f-806a-c68486e68d70\",\n\t\"amount\": 10\n}"
             },
             "description": ""
           },

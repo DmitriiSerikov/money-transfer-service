@@ -4,6 +4,7 @@ import com.github.example.dto.request.CommandCreateAccount;
 import com.github.example.dto.response.AccountData;
 import com.github.example.model.Account;
 import com.github.example.service.AccountService;
+import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.*;
 import org.modelmapper.ModelMapper;
@@ -13,7 +14,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.UUID;
 
-@Controller("/accounts")
+@Controller("/api/1.0/accounts")
 public class AccountController extends AbstractController<Account, AccountData> {
 
     private final AccountService accountService;
@@ -40,9 +41,9 @@ public class AccountController extends AbstractController<Account, AccountData> 
     @Post
     @Consumes
     @Produces
-    public HttpResponse<AccountData> createAccount(@Body final CommandCreateAccount command) {
+    public HttpResponse<AccountData> createAccount(@Body final CommandCreateAccount command, final HttpRequest request) {
         final Account account = accountService.createBy(command);
-        final URI location = HttpResponse.uri("/accounts/" + account.getId());
+        final URI location = HttpResponse.uri(request.getPath() + "/" + account.getId());
         return HttpResponse.created(convertToDto(account), location);
     }
 

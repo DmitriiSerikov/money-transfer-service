@@ -18,6 +18,8 @@ import spock.lang.Specification
 @Category(IntegrationTest)
 class AccountControllerSpec extends Specification {
 
+    static final ACCOUNT_RESOURCE_URI = "/api/1.0/accounts"
+
     @Shared
     @AutoCleanup
     EmbeddedServer embeddedServer = ApplicationContext.run(EmbeddedServer)
@@ -28,7 +30,7 @@ class AccountControllerSpec extends Specification {
     @Test
     def "should return empty collection with 200 status code when accounts not exists yet"() {
         given:
-        def request = HttpRequest.GET "/accounts"
+        def request = HttpRequest.GET ACCOUNT_RESOURCE_URI
 
         when:
         def response = client.toBlocking().exchange request, Collection.class
@@ -41,7 +43,7 @@ class AccountControllerSpec extends Specification {
     @Test
     def "should return error response with 404 status code when account with specified id doesn't exist"() {
         given:
-        def request = HttpRequest.GET "/accounts/550e8400-e29b-41d4-a716-446655440000"
+        def request = HttpRequest.GET ACCOUNT_RESOURCE_URI + "/a-b-c-d-e"
 
         when:
         client.toBlocking().exchange request
@@ -49,13 +51,13 @@ class AccountControllerSpec extends Specification {
         then:
         def ex = thrown HttpClientResponseException
         ex.status == HttpStatus.NOT_FOUND
-        ex.message == "Account not exists for id:550e8400-e29b-41d4-a716-446655440000"
+        ex.message == "Account not exists for id:0000000a-000b-000c-000d-00000000000e"
     }
 
     @Test
     def "should return error response with 400 status code when trying to get account with incorrect id format"() {
         given:
-        def request = HttpRequest.GET "/accounts/1"
+        def request = HttpRequest.GET ACCOUNT_RESOURCE_URI + "/1"
 
         when:
         client.toBlocking().exchange request
@@ -93,7 +95,7 @@ class AccountControllerSpec extends Specification {
         given:
         def initialBalance = 500
         def command = new CommandCreateAccount(initialBalance: 500)
-        def request = HttpRequest.POST "/accounts", command
+        def request = HttpRequest.POST ACCOUNT_RESOURCE_URI, command
 
         when:
         def response = client.toBlocking().exchange request, AccountData.class
@@ -101,7 +103,7 @@ class AccountControllerSpec extends Specification {
         then:
         response.status == HttpStatus.CREATED
         response.body().balance == initialBalance
-        response.header("Location") == "/accounts/" + response.body().id
+        response.header("Location") == ACCOUNT_RESOURCE_URI + "/" + response.body().id
     }
 
     @Test
@@ -110,7 +112,7 @@ class AccountControllerSpec extends Specification {
         def initialBalance = 100
         def accountId = createAccount initialBalance
         and:
-        def request = HttpRequest.GET "/accounts/" + accountId
+        def request = HttpRequest.GET ACCOUNT_RESOURCE_URI + "/" + accountId
 
         when:
         def response = client.toBlocking().exchange request, AccountData.class
@@ -119,12 +121,13 @@ class AccountControllerSpec extends Specification {
         response.status == HttpStatus.OK
         response.body().id == accountId
         response.body().balance == initialBalance
+        response.body().createdAt == response.body().updatedAt
     }
 
     @Test
     def "should return collection of accounts data with 200 status code when accounts exists"() {
         given:
-        def request = HttpRequest.GET "/accounts"
+        def request = HttpRequest.GET ACCOUNT_RESOURCE_URI
         and:
         createAccount 100
 
@@ -138,7 +141,7 @@ class AccountControllerSpec extends Specification {
 
     def createAccount(def initialBalance) {
         def command = new CommandCreateAccount(initialBalance: initialBalance)
-        def request = HttpRequest.POST "/accounts", command
+        def request = HttpRequest.POST ACCOUNT_RESOURCE_URI, command
 
         def response = client.toBlocking().exchange request, AccountData.class
 

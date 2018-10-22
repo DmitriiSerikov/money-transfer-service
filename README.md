@@ -2,7 +2,7 @@
 [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=com.github.example%3Amoney-transfer-service&metric=alert_status)](https://sonarcloud.io/dashboard/index/com.github.example%3Amoney-transfer-service)
 [![codecov](https://codecov.io/gh/DmitriiSerikov/money-transfer-service/branch/master/graph/badge.svg)](https://codecov.io/gh/DmitriiSerikov/money-transfer-service)
 
-[![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/57052f61858db233b359#?env%5BHeroku%5D=W3siZW5hYmxlZCI6dHJ1ZSwia2V5IjoidXJsIiwidmFsdWUiOiJodHRwczovL21vbmV5LXRyYW5zZmVyLXNlcnZpY2UuaGVyb2t1YXBwLmNvbSIsInR5cGUiOiJ0ZXh0In1d)
+[![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/57052f61858db233b359#?env%5BHeroku%5D=W3siZW5hYmxlZCI6dHJ1ZSwia2V5IjoidXJsIiwidmFsdWUiOiJodHRwczovL21vbmV5LXRyYW5zZmVyLXNlcnZpY2UuaGVyb2t1YXBwLmNvbSIsInR5cGUiOiJ0ZXh0In0seyJlbmFibGVkIjp0cnVlLCJrZXkiOiJhcGlfdmVyc2lvbiIsInZhbHVlIjoiMS4wIiwidHlwZSI6InRleHQifV0=)
 
 # Money transfer service powered by Micronaut
 

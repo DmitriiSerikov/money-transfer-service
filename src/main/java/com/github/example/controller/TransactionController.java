@@ -4,6 +4,7 @@ import com.github.example.dto.request.CommandCreateTransaction;
 import com.github.example.dto.response.TransactionData;
 import com.github.example.model.Transaction;
 import com.github.example.service.TransactionService;
+import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.*;
 import org.modelmapper.ModelMapper;
@@ -13,7 +14,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.UUID;
 
-@Controller("/transactions")
+@Controller("/api/1.0/transactions")
 public class TransactionController extends AbstractController<Transaction, TransactionData> {
 
     private final TransactionService transactionService;
@@ -40,9 +41,9 @@ public class TransactionController extends AbstractController<Transaction, Trans
     @Post
     @Consumes
     @Produces
-    public HttpResponse<TransactionData> createTransaction(@Body final CommandCreateTransaction command) {
+    public HttpResponse<TransactionData> createTransaction(@Body final CommandCreateTransaction command, final HttpRequest request) {
         final Transaction transaction = transactionService.createBy(command);
-        final URI location = HttpResponse.uri("/transactions/" + transaction.getId());
+        final URI location = HttpResponse.uri(request.getPath() + "/" + transaction.getId());
         return HttpResponse.accepted(location);
     }
 

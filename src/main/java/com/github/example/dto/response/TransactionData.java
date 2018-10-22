@@ -2,6 +2,7 @@ package com.github.example.dto.response;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 public class TransactionData implements Serializable {
@@ -12,6 +13,8 @@ public class TransactionData implements Serializable {
     private UUID targetAccountId;
     private BigDecimal amount;
     private String status;
+    private Instant createdAt;
+    private Instant updatedAt;
 
     public UUID getId() {
         return id;
@@ -51,5 +54,21 @@ public class TransactionData implements Serializable {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }
