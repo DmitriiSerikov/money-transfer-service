@@ -9,6 +9,7 @@ import com.github.example.holder.LockHolder
 import com.github.example.model.Transaction
 import org.junit.Test
 import org.junit.experimental.categories.Category
+import spock.lang.Shared
 import spock.lang.Specification
 
 import static com.github.example.model.Transaction.TransactionStatus.PENDING
@@ -23,10 +24,14 @@ class InMemoryTransactionDaoSpec extends Specification {
     @Collaborator
     LockHolder lockHolder = Mock()
 
-    def someUUID = UUID.fromString "00000000-0000-0000-0000-000000000000"
+    @Shared
     def firstAccountId = UUID.fromString "00000000-0000-0000-0000-000000000001"
+    @Shared
     def secondAccountId = UUID.fromString "00000000-0000-0000-0000-000000000002"
+    @Shared
     def transaction = new Transaction(firstAccountId, secondAccountId, ONE)
+
+    def someUUID = UUID.fromString "00000000-0000-0000-0000-000000000000"
 
     @Test
     def "should throw exception when transaction for insertion is null"() {
@@ -34,7 +39,8 @@ class InMemoryTransactionDaoSpec extends Specification {
         inMemoryTransactionDao.insert null
 
         then:
-        thrown IllegalArgumentException
+        def ex = thrown IllegalArgumentException
+        ex.message == "Transaction cannot be null"
     }
 
     @Test
@@ -152,6 +158,16 @@ class InMemoryTransactionDaoSpec extends Specification {
     }
 
     @Test
+    def "should throw exception when try get transaction by null instead of id"() {
+        when:
+        inMemoryTransactionDao.getBy null
+
+        then:
+        def ex = thrown IllegalArgumentException
+        ex.message == "Transaction identifier cannot be null"
+    }
+
+    @Test
     def "should throw exception when storage doesn't contains transaction for specified id"() {
         when:
         inMemoryTransactionDao.getBy someUUID
@@ -178,7 +194,8 @@ class InMemoryTransactionDaoSpec extends Specification {
         inMemoryTransactionDao.update null
 
         then:
-        thrown IllegalArgumentException
+        def ex = thrown IllegalArgumentException
+        ex.message == "Transaction cannot be null"
     }
 
     @Test
@@ -222,12 +239,32 @@ class InMemoryTransactionDaoSpec extends Specification {
     }
 
     @Test
+    def "should throw exception when try lock account by null instead of id"() {
+        when:
+        inMemoryTransactionDao.lockBy null
+
+        then:
+        def ex = thrown IllegalArgumentException
+        ex.message == "Transaction identifier cannot be null"
+    }
+
+    @Test
     def "should acquire lock using holder when try to lock transaction for specified id"() {
         when:
         inMemoryTransactionDao.lockBy someUUID
 
         then:
         1 * lockHolder.acquire({ it.contains(someUUID as String) } as String)
+    }
+
+    @Test
+    def "should throw exception when try unlock account by null instead of id"() {
+        when:
+        inMemoryTransactionDao.unlockBy null
+
+        then:
+        def ex = thrown IllegalArgumentException
+        ex.message == "Transaction identifier cannot be null"
     }
 
     @Test

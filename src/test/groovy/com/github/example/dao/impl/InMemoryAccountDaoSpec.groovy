@@ -9,6 +9,7 @@ import com.github.example.holder.LockHolder
 import com.github.example.model.Account
 import org.junit.Test
 import org.junit.experimental.categories.Category
+import spock.lang.Shared
 import spock.lang.Specification
 
 import static java.math.BigDecimal.ONE
@@ -22,6 +23,7 @@ class InMemoryAccountDaoSpec extends Specification {
     @Collaborator
     LockHolder lockHolder = Mock()
 
+    @Shared
     def account = new Account(ONE)
     def someUUID = UUID.fromString "00000000-0000-0000-0000-000000000000"
 
@@ -31,7 +33,8 @@ class InMemoryAccountDaoSpec extends Specification {
         inMemoryAccountDao.insert null
 
         then:
-        thrown IllegalArgumentException
+        def ex = thrown IllegalArgumentException
+        ex.message == "Account cannot be null"
     }
 
     @Test
@@ -78,6 +81,16 @@ class InMemoryAccountDaoSpec extends Specification {
     }
 
     @Test
+    def "should throw exception when try get account by null instead of id"() {
+        when:
+        inMemoryAccountDao.getBy null
+
+        then:
+        def ex = thrown IllegalArgumentException
+        ex.message == "Account identifier cannot be null"
+    }
+
+    @Test
     def "should throw exception when storage doesn't contains account for specified id"() {
         when:
         inMemoryAccountDao.getBy someUUID
@@ -104,7 +117,8 @@ class InMemoryAccountDaoSpec extends Specification {
         inMemoryAccountDao.update null
 
         then:
-        thrown IllegalArgumentException
+        def ex = thrown IllegalArgumentException
+        ex.message == "Account cannot be null"
     }
 
     @Test
@@ -148,12 +162,32 @@ class InMemoryAccountDaoSpec extends Specification {
     }
 
     @Test
+    def "should throw exception when try lock account by null instead of id"() {
+        when:
+        inMemoryAccountDao.lockBy null
+
+        then:
+        def ex = thrown IllegalArgumentException
+        ex.message == "Account identifier cannot be null"
+    }
+
+    @Test
     def "should acquire lock using holder when try to lock account for specified id"() {
         when:
         inMemoryAccountDao.lockBy someUUID
 
         then:
         1 * lockHolder.acquire({ it.contains(someUUID as String) } as String)
+    }
+
+    @Test
+    def "should throw exception when try unlock account by null instead of id"() {
+        when:
+        inMemoryAccountDao.unlockBy null
+
+        then:
+        def ex = thrown IllegalArgumentException
+        ex.message == "Account identifier cannot be null"
     }
 
     @Test

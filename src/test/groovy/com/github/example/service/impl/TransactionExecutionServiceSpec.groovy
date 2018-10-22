@@ -33,10 +33,15 @@ class TransactionExecutionServiceSpec extends Specification {
     def firstAccount = new Account(ONE)
     @Shared
     def secondAccount = new Account(ONE)
+    @Shared
     def firstAccountId = firstAccount.id
+    @Shared
     def secondAccountId = secondAccount.id
+    @Shared
     def transaction = new Transaction(firstAccountId, secondAccountId, ONE)
+    @Shared
     def transactionId = transaction.id
+
     def limit = 10
     def someUUID = UUID.fromString "00000000-0000-0000-0000-000000000000"
 
@@ -142,6 +147,16 @@ class TransactionExecutionServiceSpec extends Specification {
         notThrown IllegalStateException
         1 * transactionDao.lockBy(transactionId)
         1 * transactionDao.unlockBy(transactionId)
+    }
+
+    @Test
+    def "should throw exception when try execute transaction by null instead of id"() {
+        when:
+        executionService.execute null
+
+        then:
+        def ex = thrown IllegalArgumentException
+        ex.message == "Transaction identifier cannot be null"
     }
 
     @Test

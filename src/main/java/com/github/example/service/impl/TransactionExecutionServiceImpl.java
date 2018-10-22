@@ -8,6 +8,7 @@ import com.github.example.model.Account;
 import com.github.example.model.Transaction;
 import com.github.example.service.TransactionExecutionService;
 import io.micronaut.core.util.CollectionUtils;
+import org.modelmapper.internal.util.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +51,7 @@ public class TransactionExecutionServiceImpl implements TransactionExecutionServ
 
     @Override
     public void execute(final UUID transactionId) {
+        Assert.notNull(transactionId, "Transaction identifier");
         LOGGER.info("Execute transaction with id:{} at {}", transactionId, Instant.now());
         transactionDao.lockBy(transactionId);
 

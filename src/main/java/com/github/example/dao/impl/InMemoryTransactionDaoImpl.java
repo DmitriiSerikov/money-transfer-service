@@ -22,6 +22,9 @@ import static java.util.Comparator.comparing;
 @Singleton
 public class InMemoryTransactionDaoImpl implements TransactionDao {
 
+    private static final String TRANSACTION_ID_PARAM = "Transaction identifier";
+    private static final String TRANSACTION_PARAM = "Transaction";
+
     private final ConcurrentMap<UUID, Transaction> storage = new ConcurrentHashMap<>();
     private final LockHolder lockHolder;
 
@@ -38,7 +41,7 @@ public class InMemoryTransactionDaoImpl implements TransactionDao {
     }
 
     @Override
-    public Collection<Transaction> findPending(int limit) {
+    public Collection<Transaction> findPending(final int limit) {
         return findAll().stream()
                 .filter(transaction -> PENDING.equals(transaction.getStatus()))
                 .limit(limit)
@@ -47,7 +50,7 @@ public class InMemoryTransactionDaoImpl implements TransactionDao {
 
     @Override
     public Transaction insert(final Transaction transaction) {
-        Assert.notNull(transaction);
+        Assert.notNull(transaction, TRANSACTION_PARAM);
 
         return storage.compute(transaction.getId(), (id, previousValue) -> {
             if (previousValue != null) {
@@ -59,13 +62,15 @@ public class InMemoryTransactionDaoImpl implements TransactionDao {
 
     @Override
     public Transaction getBy(final UUID transactionId) {
+        Assert.notNull(transactionId, TRANSACTION_ID_PARAM);
+
         return Optional.ofNullable(storage.get(transactionId))
                 .orElseThrow(() -> new EntityNotFoundException("Transaction not exists for id:" + transactionId));
     }
 
     @Override
     public void update(final Transaction transaction) {
-        Assert.notNull(transaction);
+        Assert.notNull(transaction, TRANSACTION_PARAM);
 
         final UUID transactionId = transaction.getId();
 
@@ -79,11 +84,15 @@ public class InMemoryTransactionDaoImpl implements TransactionDao {
 
     @Override
     public void lockBy(final UUID transactionId) {
+        Assert.notNull(transactionId, TRANSACTION_ID_PARAM);
+
         lockHolder.acquire(getLockId(transactionId));
     }
 
     @Override
     public void unlockBy(final UUID transactionId) {
+        Assert.notNull(transactionId, TRANSACTION_ID_PARAM);
+
         lockHolder.release(getLockId(transactionId));
     }
 

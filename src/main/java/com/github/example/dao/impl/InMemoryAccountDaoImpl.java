@@ -20,6 +20,9 @@ import static java.util.Collections.unmodifiableCollection;
 @Singleton
 public class InMemoryAccountDaoImpl implements AccountDao {
 
+    private static final String ACCOUNT_ID_PARAM = "Account identifier";
+    private static final String ACCOUNT_PARAM = "Account";
+
     private final ConcurrentMap<UUID, Account> storage = new ConcurrentHashMap<>();
     private final LockHolder lockHolder;
 
@@ -35,7 +38,7 @@ public class InMemoryAccountDaoImpl implements AccountDao {
 
     @Override
     public Account insert(final Account account) {
-        Assert.notNull(account);
+        Assert.notNull(account, ACCOUNT_PARAM);
 
         return storage.compute(account.getId(), (id, previousValue) -> {
             if (previousValue != null) {
@@ -47,13 +50,15 @@ public class InMemoryAccountDaoImpl implements AccountDao {
 
     @Override
     public Account getBy(final UUID accountId) {
+        Assert.notNull(accountId, ACCOUNT_ID_PARAM);
+
         return Optional.ofNullable(storage.get(accountId))
                 .orElseThrow(() -> new EntityNotFoundException("Account not exists for id:" + accountId));
     }
 
     @Override
     public void update(final Account account) {
-        Assert.notNull(account);
+        Assert.notNull(account, ACCOUNT_PARAM);
 
         final UUID accountId = account.getId();
 
@@ -67,11 +72,15 @@ public class InMemoryAccountDaoImpl implements AccountDao {
 
     @Override
     public void lockBy(final UUID accountId) {
+        Assert.notNull(accountId, ACCOUNT_ID_PARAM);
+
         lockHolder.acquire(getLockId(accountId));
     }
 
     @Override
     public void unlockBy(final UUID accountId) {
+        Assert.notNull(accountId, ACCOUNT_ID_PARAM);
+
         lockHolder.release(getLockId(accountId));
     }
 
