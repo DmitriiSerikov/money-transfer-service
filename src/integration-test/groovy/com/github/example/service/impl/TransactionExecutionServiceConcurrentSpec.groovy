@@ -19,8 +19,6 @@ import java.util.concurrent.CyclicBarrier
 import java.util.concurrent.ExecutorCompletionService
 import java.util.concurrent.Executors
 
-import static com.github.example.model.Transaction.TransactionStatus.SUCCESS
-
 @Category(IntegrationTest)
 class TransactionExecutionServiceConcurrentSpec extends Specification {
 
@@ -39,7 +37,7 @@ class TransactionExecutionServiceConcurrentSpec extends Specification {
 
     @Test
     @Timeout(value = 10)
-    def "should preserve consistency of summary balance when all concurrent transactions between two accounts are executed successfully"() {
+    def "should preserve consistency of summary balance when executes concurrent transactions between two accounts"() {
         given:
         def concurrentTransactionsCount = 1000
         def command = new CommandCreateAccount(initialBalance: 1000)
@@ -53,9 +51,6 @@ class TransactionExecutionServiceConcurrentSpec extends Specification {
 
         then:
         accountService.getAll()*.balance.sum() == 2000
-        transactionService.getAll().count {
-            it.status == SUCCESS
-        } == concurrentTransactionsCount
     }
 
     def transaction(def firstAccountId, def secondAccountId) {
