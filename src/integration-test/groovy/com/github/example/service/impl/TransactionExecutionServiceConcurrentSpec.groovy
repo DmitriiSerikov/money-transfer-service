@@ -7,22 +7,28 @@ import com.github.example.service.AccountService
 import com.github.example.service.TransactionExecutionService
 import com.github.example.service.TransactionService
 import io.micronaut.context.ApplicationContext
+import io.micronaut.context.env.PropertySource
 import org.junit.Test
 import org.junit.experimental.categories.Category
 import spock.lang.AutoCleanup
 import spock.lang.Shared
 import spock.lang.Specification
+import spock.lang.Timeout
 
 import java.util.concurrent.CyclicBarrier
 import java.util.concurrent.ExecutorCompletionService
 import java.util.concurrent.Executors
 
+import static com.github.example.model.Transaction.TransactionStatus.SUCCESS
+
 @Category(IntegrationTest)
 class TransactionExecutionServiceConcurrentSpec extends Specification {
 
+    static CONFIGURATION = PropertySource.of(["processing.transactions.enabled": false, "processing.lockHolder.timeout": 5000])
+
     @Shared
     @AutoCleanup
-    def applicationContext = ApplicationContext.run()
+    def applicationContext = ApplicationContext.run CONFIGURATION
 
     @Shared
     def executionService = applicationContext.getBean TransactionExecutionService
@@ -32,8 +38,10 @@ class TransactionExecutionServiceConcurrentSpec extends Specification {
     def accountService = applicationContext.getBean AccountService
 
     @Test
-    def "should preserve consistency of summary balance when concurrent transactions are executed between two accounts"() {
+    @Timeout(value = 10)
+    def "should preserve consistency of summary balance when all concurrent transactions between two accounts are executed successfully"() {
         given:
+        def concurrentTransactionsCount = 1000
         def command = new CommandCreateAccount(initialBalance: 1000)
         def firstAccountId = accountService.createBy(command).id
         def secondAccountId = accountService.createBy(command).id
@@ -41,10 +49,13 @@ class TransactionExecutionServiceConcurrentSpec extends Specification {
         def txFromSecondToFirst = { transaction secondAccountId, firstAccountId }
 
         when:
-        executeConcurrentTransactions 1000, txFromFirstToSecond, txFromSecondToFirst
+        executeConcurrentTransactions concurrentTransactionsCount, txFromFirstToSecond, txFromSecondToFirst
 
         then:
         accountService.getAll()*.balance.sum() == 2000
+        transactionService.getAll().count {
+            it.status == SUCCESS
+        } == concurrentTransactionsCount
     }
 
     def transaction(def firstAccountId, def secondAccountId) {

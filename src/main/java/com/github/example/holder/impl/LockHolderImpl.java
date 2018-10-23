@@ -2,44 +2,45 @@ package com.github.example.holder.impl;
 
 import com.github.example.exception.CouldNotAcquireLockException;
 import com.github.example.holder.LockHolder;
+import io.micronaut.context.annotation.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
-import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import static java.util.Optional.ofNullable;
 
 @Singleton
 public class LockHolderImpl implements LockHolder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LockHolderImpl.class);
-    private static final long DEFAULT_TIMEOUT = 10L;
 
-    private final Map<String, Lock> locks = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ReentrantLock> locks = new ConcurrentHashMap<>();
+
+    @Value("${processing.lockHolder.timeout:5000}")
+    private long timeout;
 
     @Override
     public void acquire(final String lockId) {
-        locks.compute(lockId, this::getAcquiredLock);
+        final ReentrantLock lock = locks.computeIfAbsent(lockId, key -> new ReentrantLock(true));
+        acquireLock(lockId, lock);
     }
 
     @Override
     public void release(final String lockId) {
-        locks.computeIfPresent(lockId, this::releaseLock);
+        Optional.ofNullable(locks.get(lockId))
+                .ifPresent(lock -> releaseLock(lockId, lock));
     }
 
-    private Lock getAcquiredLock(final String lockId, final Lock previousValue) {
+    private void acquireLock(final String lockId, final ReentrantLock lock) {
         try {
-            final Lock lock = ofNullable(previousValue).orElseGet(ReentrantLock::new);
-            if (!lock.tryLock(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS)) {
+            if (!lock.tryLock(timeout, TimeUnit.MILLISECONDS)) {
                 throw new CouldNotAcquireLockException("Couldn't acquire lock for key:" + lockId);
             }
-            LOGGER.info("Lock acquired for id:{}", lockId);
-            return lock;
+            LOGGER.debug("Lock acquired for id:{}", lockId);
         } catch (InterruptedException ex) {
             final Thread currentThread = Thread.currentThread();
             LOGGER.error("Thread {} where interrupted when acquire lock for id:{}", currentThread.getName(), lockId);
@@ -48,13 +49,17 @@ public class LockHolderImpl implements LockHolder {
         }
     }
 
-    private Lock releaseLock(final String lockId, final Lock lock) {
-        try {
+    private void releaseLock(final String lockId, final ReentrantLock lock) {
+        if (lock.tryLock()) {
+            locks.computeIfPresent(lockId, (key, value) -> {
+                int holdCount = lock.getHoldCount();
+                if (holdCount > 1) {
+                    lock.unlock();
+                    LOGGER.debug("Lock released for id:{}", lockId);
+                }
+                return holdCount == 1 ? null : lock;
+            });
             lock.unlock();
-            LOGGER.info("Lock released for id:{}", lockId);
-        } catch (Exception ex) {
-            LOGGER.error("Couldn't release lock for entity with id:{}", lockId, ex);
         }
-        return lock;
     }
 }

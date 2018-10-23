@@ -8,5 +8,8 @@ jackson:
 
 processing:
     transactions:
+          enabled: true
           cron: 0 * * ? * *
           limit: 500
+    lockHolder:
+          timeout: 5000

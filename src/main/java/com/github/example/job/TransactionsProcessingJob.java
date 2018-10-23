@@ -20,15 +20,20 @@ public class TransactionsProcessingJob {
     @Value("${processing.transactions.limit:200}")
     private int processingLimit;
 
+    @Value("${processing.transactions.enabled:true}")
+    private boolean enabled;
+
     @Inject
     public TransactionsProcessingJob(final TransactionExecutionService transactionExecutionService) {
         this.transactionExecutionService = transactionExecutionService;
     }
 
-    @Scheduled(cron = "${processing.transactions.cron}")
+    @Scheduled(cron = "${processing.transactions.cron:0 0 * ? * *}")
     public void process() {
-        LOGGER.info("Start processing pending transactions at {}", Instant.now());
-        transactionExecutionService.executePending(processingLimit);
-        LOGGER.info("Finished processing pending transactions at {}", Instant.now());
+        if (enabled) {
+            LOGGER.info("Start processing pending transactions at {}", Instant.now());
+            transactionExecutionService.executePending(processingLimit);
+            LOGGER.info("Finished processing pending transactions at {}", Instant.now());
+        }
     }
 }

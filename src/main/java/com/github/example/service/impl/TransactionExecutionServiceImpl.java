@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import static com.github.example.model.Transaction.TransactionStatus.PENDING;
 import static java.util.stream.Collectors.groupingBy;
@@ -53,7 +54,7 @@ public class TransactionExecutionServiceImpl implements TransactionExecutionServ
     public void execute(final UUID transactionId) {
         Assert.notNull(transactionId, "Transaction identifier");
 
-        LOGGER.info("Start execution of transaction with id:{} at {}", transactionId, Instant.now());
+        LOGGER.debug("Start execution of transaction with id:{} at {}", transactionId, Instant.now());
         transactionDao.lockBy(transactionId);
 
         try {
@@ -65,8 +66,8 @@ public class TransactionExecutionServiceImpl implements TransactionExecutionServ
             final BigDecimal amount = transaction.getAmount();
 
             try {
-                acquireLocksWithOrdering(sourceAccountId, targetAccountId);
-                LOGGER.info("Accounts with source id:{} and target id:{} locked during execution of transaction with id:{}", sourceAccountId, targetAccountId, transactionId);
+                executeOperationsWithOrdering(sourceAccountId, targetAccountId, accountDao::lockBy);
+                LOGGER.debug("Accounts with source id:{} and target id:{} locked during execution of transaction with id:{}", sourceAccountId, targetAccountId, transactionId);
 
                 final Account sourceAccount = accountDao.getBy(sourceAccountId);
                 final Account targetAccount = accountDao.getBy(targetAccountId);
@@ -74,19 +75,18 @@ public class TransactionExecutionServiceImpl implements TransactionExecutionServ
                 accountDao.update(sourceAccount.withdraw(amount));
                 accountDao.update(targetAccount.deposit(amount));
                 transactionDao.update(transaction.executed());
+                LOGGER.debug("Finished execution of transaction with id:{} at {}", transactionId, Instant.now());
+            } catch (CouldNotAcquireLockException ex) {
+                LOGGER.debug("Execution of the transaction with id:{} will be delayed due to the lock on one of the accounts", transactionId, ex);
             } catch (Exception ex) {
                 LOGGER.error("Failed to execute transaction with id:{} between accounts with source id:{} and target id:{}", transactionId, sourceAccountId, targetAccountId, ex);
                 transactionDao.update(transaction.failed(ex.getMessage()));
             } finally {
-                accountDao.unlockBy(sourceAccountId);
-                accountDao.unlockBy(targetAccountId);
+                executeOperationsWithOrdering(sourceAccountId, targetAccountId, accountDao::unlockBy);
             }
-        } catch (CouldNotAcquireLockException ex) {
-            LOGGER.info("Execution of the transaction with id:{} will be delayed due to the lock on one of the accounts", transactionId, ex);
         } finally {
             transactionDao.unlockBy(transactionId);
         }
-        LOGGER.info("Finished execution of transaction with id:{} at {}", transactionId, Instant.now());
     }
 
     private Map<UUID, List<Transaction>> getTxGroupedBySourceAccount(final Collection<Transaction> transactions) {
@@ -95,7 +95,7 @@ public class TransactionExecutionServiceImpl implements TransactionExecutionServ
     }
 
     private void executeWithOrdering(final UUID sourceAccountId, final List<Transaction> transactions) {
-        LOGGER.info("Start execution of {} transactions with source account id:{}", transactions.size(), sourceAccountId);
+        LOGGER.debug("Start execution of {} transactions with source account id:{}", transactions.size(), sourceAccountId);
         transactions.stream()
                 .map(Transaction::getId)
                 .forEach(this::executePendingTransaction);
@@ -115,7 +115,7 @@ public class TransactionExecutionServiceImpl implements TransactionExecutionServ
         }
     }
 
-    private void acquireLocksWithOrdering(final UUID sourceAccountId, final UUID targetAccountId) {
+    private void executeOperationsWithOrdering(final UUID sourceAccountId, final UUID targetAccountId, final Consumer<UUID> operation) {
         final UUID firstLock;
         final UUID secondLock;
 
@@ -127,7 +127,7 @@ public class TransactionExecutionServiceImpl implements TransactionExecutionServ
             secondLock = sourceAccountId;
         }
 
-        accountDao.lockBy(firstLock);
-        accountDao.lockBy(secondLock);
+        operation.accept(firstLock);
+        operation.accept(secondLock);
     }
 }
