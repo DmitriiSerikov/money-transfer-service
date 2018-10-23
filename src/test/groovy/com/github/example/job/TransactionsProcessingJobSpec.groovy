@@ -16,9 +16,13 @@ class TransactionsProcessingJobSpec extends Specification {
 
     @Collaborator
     TransactionExecutionService transactionExecutionService = Mock()
+    @Collaborator
+    boolean enabled = true
+    @Collaborator
+    int limit = 100
 
     @Test
-    def "should start processing of pending transaction with specified limit when job is triggered by scheduler"() {
+    def "should start processing of pending transaction with specified limit when job is enabled and triggered by scheduler"() {
         when:
         transactionsProcessingJob.process()
 
