@@ -33,7 +33,7 @@ public interface TransactionDao {
      * Stores newly created transaction into the storage.
      *
      * @param transaction the transaction entity for storing into the storage
-     * @return the transaction entity successfully persisted into the storage
+     * @return the transaction entity persisted into the storage
      * @throws EntityAlreadyExistsException if transaction with the unique identifier is already present
      */
     Transaction insert(Transaction transaction);
@@ -53,8 +53,9 @@ public interface TransactionDao {
      * otherwise puts it into the storage.
      *
      * @param transaction the transaction entity for storing into the storage
+     * @return the transaction entity updated in the storage
      */
-    void update(Transaction transaction);
+    Transaction update(Transaction transaction);
 
     /**
      * Acquires the lock for transaction entity by the unique identifier.

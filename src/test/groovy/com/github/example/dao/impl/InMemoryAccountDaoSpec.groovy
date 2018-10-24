@@ -25,7 +25,7 @@ class InMemoryAccountDaoSpec extends Specification {
 
     @Shared
     def account = new Account(ONE)
-    def someUUID = UUID.fromString "00000000-0000-0000-0000-000000000000"
+    def someUUID = UUID.fromString "0-0-0-0-0"
 
     @Test
     def "should throw exception when account for insertion is null"() {
@@ -46,7 +46,8 @@ class InMemoryAccountDaoSpec extends Specification {
         inMemoryAccountDao.insert account
 
         then:
-        thrown EntityAlreadyExistsException
+        def ex = thrown EntityAlreadyExistsException
+        ex.message == "Account already exists for id:" + account.id
     }
 
     @Test
@@ -96,7 +97,8 @@ class InMemoryAccountDaoSpec extends Specification {
         inMemoryAccountDao.getBy someUUID
 
         then:
-        thrown EntityNotFoundException
+        def ex = thrown EntityNotFoundException
+        ex.message == "Account not exists for id:" + someUUID
     }
 
     @Test
@@ -123,6 +125,9 @@ class InMemoryAccountDaoSpec extends Specification {
 
     @Test
     def "should acquire lock for account id using holder before updating account"() {
+        given:
+        inMemoryAccountDao.insert account
+
         when:
         inMemoryAccountDao.update account
 
@@ -131,18 +136,20 @@ class InMemoryAccountDaoSpec extends Specification {
     }
 
     @Test
-    def "should store account when storage doesn't contains account with specified id"() {
+    def "should throw exception when try to update account that doesn't exist in storage"() {
         when:
         inMemoryAccountDao.update account
 
         then:
-        inMemoryAccountDao.getBy(account.id) == account
+        def ex = thrown EntityNotFoundException
+        ex.message == "Account not exists for id:" + account.id
     }
 
     @Test
-    def "should update account when storage already contains account with specified id"() {
+    def "should update account when account for update already exists in storage"() {
         given:
         def updatedAccount = account.withdraw ONE
+        and:
         inMemoryAccountDao.insert account
 
         when:
@@ -153,7 +160,10 @@ class InMemoryAccountDaoSpec extends Specification {
     }
 
     @Test
-    def "should release lock for account id using holder when finishes update of account"() {
+    def "should release lock for account id using holder when finished update of account"() {
+        given:
+        inMemoryAccountDao.insert account
+
         when:
         inMemoryAccountDao.update account
 

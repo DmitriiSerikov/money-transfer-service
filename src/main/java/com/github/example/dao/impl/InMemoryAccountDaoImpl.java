@@ -57,14 +57,19 @@ public class InMemoryAccountDaoImpl implements AccountDao {
     }
 
     @Override
-    public void update(final Account account) {
+    public Account update(final Account account) {
         Assert.notNull(account, ACCOUNT_PARAM);
 
         final UUID accountId = account.getId();
 
         lockBy(accountId);
         try {
-            storage.put(accountId, account);
+            return storage.compute(accountId, (id, previousValue) -> {
+                if (previousValue == null) {
+                    throw new EntityNotFoundException("Account not exists for id:" + id);
+                }
+                return account;
+            });
         } finally {
             unlockBy(accountId);
         }

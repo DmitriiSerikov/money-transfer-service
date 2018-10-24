@@ -75,7 +75,6 @@ public class TransactionExecutionServiceImpl implements TransactionExecutionServ
                 accountDao.update(sourceAccount.withdraw(amount));
                 accountDao.update(targetAccount.deposit(amount));
                 transactionDao.update(transaction.executed());
-                LOGGER.debug("Finished execution of transaction with id:{} at {}", transactionId, Instant.now());
             } catch (CouldNotAcquireLockException ex) {
                 LOGGER.debug("Execution of the transaction with id:{} will be delayed due to the lock on one of the accounts", transactionId, ex);
             } catch (Exception ex) {
@@ -87,6 +86,7 @@ public class TransactionExecutionServiceImpl implements TransactionExecutionServ
         } finally {
             transactionDao.unlockBy(transactionId);
         }
+        LOGGER.debug("Finished execution of transaction with id:{} at {}", transactionId, Instant.now());
     }
 
     private Map<UUID, List<Transaction>> getTxGroupedBySourceAccount(final Collection<Transaction> transactions) {

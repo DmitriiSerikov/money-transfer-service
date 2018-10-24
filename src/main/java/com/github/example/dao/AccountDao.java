@@ -22,7 +22,7 @@ public interface AccountDao {
      * Stores newly created account into the storage.
      *
      * @param account the account entity for storing into the storage
-     * @return the account entity successfully persisted into the storage
+     * @return the account entity persisted into the storage
      * @throws EntityAlreadyExistsException if account with the unique identifier is already present
      */
     Account insert(Account account);
@@ -42,8 +42,9 @@ public interface AccountDao {
      * otherwise puts it into the storage.
      *
      * @param account the account entity for storing into the storage
+     * @return the account entity updated in the storage
      */
-    void update(Account account);
+    Account update(Account account);
 
     /**
      * Acquires the lock for account entity by the unique identifier.

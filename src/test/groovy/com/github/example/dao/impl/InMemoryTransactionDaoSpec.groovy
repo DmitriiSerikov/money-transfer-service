@@ -25,13 +25,13 @@ class InMemoryTransactionDaoSpec extends Specification {
     LockHolder lockHolder = Mock()
 
     @Shared
-    def firstAccountId = UUID.fromString "00000000-0000-0000-0000-000000000001"
+    def firstAccountId = UUID.fromString "a-b-c-d-e"
     @Shared
-    def secondAccountId = UUID.fromString "00000000-0000-0000-0000-000000000002"
+    def secondAccountId = UUID.fromString "a-b-c-d-f"
     @Shared
     def transaction = new Transaction(firstAccountId, secondAccountId, ONE)
 
-    def someUUID = UUID.fromString "00000000-0000-0000-0000-000000000000"
+    def someUUID = UUID.fromString "0-0-0-0-0"
 
     @Test
     def "should throw exception when transaction for insertion is null"() {
@@ -52,7 +52,8 @@ class InMemoryTransactionDaoSpec extends Specification {
         inMemoryTransactionDao.insert transaction
 
         then:
-        thrown EntityAlreadyExistsException
+        def ex = thrown EntityAlreadyExistsException
+        ex.message == "Transaction already exists for id:" + transaction.id
     }
 
     @Test
@@ -173,7 +174,8 @@ class InMemoryTransactionDaoSpec extends Specification {
         inMemoryTransactionDao.getBy someUUID
 
         then:
-        thrown EntityNotFoundException
+        def ex = thrown EntityNotFoundException
+        ex.message == "Transaction not exists for id:" + someUUID
     }
 
     @Test
@@ -200,6 +202,9 @@ class InMemoryTransactionDaoSpec extends Specification {
 
     @Test
     def "should acquire lock for transaction id using holder before updating transaction"() {
+        given:
+        inMemoryTransactionDao.insert transaction
+
         when:
         inMemoryTransactionDao.update transaction
 
@@ -208,18 +213,20 @@ class InMemoryTransactionDaoSpec extends Specification {
     }
 
     @Test
-    def "should store transaction when storage doesn't contains transaction with specified id"() {
+    def "should throw exception when try to update transaction that doesn't exist in storage"() {
         when:
         inMemoryTransactionDao.update transaction
 
         then:
-        inMemoryTransactionDao.getBy(transaction.id) == transaction
+        def ex = thrown EntityNotFoundException
+        ex.message == "Transaction not exists for id:" + transaction.id
     }
 
     @Test
-    def "should update transaction when storage already contains transaction with specified id"() {
+    def "should update transaction when transaction for update already exists in storage"() {
         given:
         def updatedTransaction = transaction.executed()
+        and:
         inMemoryTransactionDao.insert transaction
 
         when:
@@ -230,7 +237,10 @@ class InMemoryTransactionDaoSpec extends Specification {
     }
 
     @Test
-    def "should release lock for transaction id using holder when finishes update of transaction"() {
+    def "should release lock for transaction id using holder when finished update of transaction"() {
+        given:
+        inMemoryTransactionDao.insert transaction
+
         when:
         inMemoryTransactionDao.update transaction
 

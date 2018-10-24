@@ -69,14 +69,19 @@ public class InMemoryTransactionDaoImpl implements TransactionDao {
     }
 
     @Override
-    public void update(final Transaction transaction) {
+    public Transaction update(final Transaction transaction) {
         Assert.notNull(transaction, TRANSACTION_PARAM);
 
         final UUID transactionId = transaction.getId();
 
         lockBy(transactionId);
         try {
-            storage.put(transactionId, transaction);
+            return storage.compute(transactionId, (id, previousValue) -> {
+                if (previousValue == null) {
+                    throw new EntityNotFoundException("Transaction not exists for id:" + id);
+                }
+                return transaction;
+            });
         } finally {
             unlockBy(transactionId);
         }
