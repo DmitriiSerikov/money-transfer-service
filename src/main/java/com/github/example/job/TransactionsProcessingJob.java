@@ -16,15 +16,14 @@ public class TransactionsProcessingJob {
     private static final Logger LOGGER = LoggerFactory.getLogger(TransactionsProcessingJob.class);
 
     private final TransactionExecutionService transactionExecutionService;
-    private final int processingLimit;
-    private final boolean isEnabled;
+
+    @Value("${processing.transactions.limit:200}")
+    private int processingLimit;
+    @Value("${processing.transactions.enabled:true}")
+    private boolean isEnabled;
 
     @Inject
-    public TransactionsProcessingJob(@Value("${processing.transactions.limit:200}") final int processingLimit,
-                                     @Value("${processing.transactions.enabled:true}") final boolean isEnabled,
-                                     final TransactionExecutionService transactionExecutionService) {
-        this.processingLimit = processingLimit;
-        this.isEnabled = isEnabled;
+    public TransactionsProcessingJob(final TransactionExecutionService transactionExecutionService) {
         this.transactionExecutionService = transactionExecutionService;
     }
 
@@ -35,5 +34,13 @@ public class TransactionsProcessingJob {
             transactionExecutionService.executePending(processingLimit);
             LOGGER.info("Finished processing pending transactions at {}", Instant.now());
         }
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.isEnabled = enabled;
+    }
+
+    public void setProcessingLimit(int processingLimit) {
+        this.processingLimit = processingLimit;
     }
 }
