@@ -53,4 +53,16 @@ class LockHolderSpec extends Specification {
         then:
         notThrown Exception
     }
+
+    @Test
+    def "should not throw exception when release lock that doesn't hold by any thread and neither one thread are waiting to acquire this lock"() {
+        given:
+        lockHolder.acquire lockId
+
+        when:
+        lockHolder.release lockId
+
+        then:
+        notThrown Exception
+    }
 }
