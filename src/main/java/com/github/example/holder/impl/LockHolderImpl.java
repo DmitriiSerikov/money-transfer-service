@@ -50,6 +50,7 @@ public class LockHolderImpl implements LockHolder {
         } catch (InterruptedException ex) {
             final Thread currentThread = Thread.currentThread();
             LOGGER.error("Thread {} where interrupted when acquire lock for id:{}", currentThread.getName(), lockId);
+            currentThread.interrupt();
             throw new CouldNotAcquireLockException("Lock not acquired due to interruption of thread, id:" + lockId, ex);
         }
     }
