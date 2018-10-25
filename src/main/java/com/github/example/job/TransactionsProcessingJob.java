@@ -19,7 +19,7 @@ public class TransactionsProcessingJob {
 
     @Value("${processing.transactions.limit:200}")
     private int processingLimit;
-    @Value("${processing.transactions.enabled:true}")
+    @Value("${processing.transactions.enabled:false}")
     private boolean isEnabled;
 
     @Inject

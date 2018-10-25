@@ -4,7 +4,6 @@ import com.github.example.IntegrationTest
 import com.github.example.exception.CouldNotAcquireLockException
 import com.github.example.holder.LockHolder
 import io.micronaut.context.ApplicationContext
-import io.micronaut.context.env.PropertySource
 import org.junit.Test
 import org.junit.experimental.categories.Category
 import spock.lang.AutoCleanup
@@ -16,13 +15,11 @@ import java.util.concurrent.Executors
 import static java.lang.Thread.currentThread
 
 @Category(IntegrationTest)
-class LockHolderConcurrentSpec extends Specification {
-
-    static CONFIGURATION = PropertySource.of(["processing.transactions.enabled": false, "processing.lockHolder.timeout": 5000])
+class LockHolderITSpec extends Specification {
 
     @Shared
     @AutoCleanup
-    def applicationContext = ApplicationContext.run CONFIGURATION
+    def applicationContext = ApplicationContext.run()
 
     @Shared
     def lockHolder = applicationContext.getBean LockHolder

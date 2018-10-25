@@ -18,10 +18,9 @@ import spock.lang.Shared
 import spock.lang.Specification
 
 @Category(IntegrationTest)
-class TransactionControllerSpec extends Specification {
+class TransactionControllerITSpec extends Specification {
 
     static final TRANSACTION_RESOURCE_URI = "/api/1.0/transactions"
-    static final ACCOUNT_RESOURCE_URI = "/api/1.0/accounts"
 
     @Shared
     @AutoCleanup
@@ -195,7 +194,7 @@ class TransactionControllerSpec extends Specification {
 
     def createAccount(def initialBalance) {
         def command = new CommandCreateAccount(initialBalance: initialBalance)
-        def request = HttpRequest.POST ACCOUNT_RESOURCE_URI, command
+        def request = HttpRequest.POST "/api/1.0/accounts", command
 
         def response = client.toBlocking().exchange request, AccountData.class
 

@@ -16,7 +16,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 
 @Category(IntegrationTest)
-class AccountControllerSpec extends Specification {
+class AccountControllerITSpec extends Specification {
 
     static final ACCOUNT_RESOURCE_URI = "/api/1.0/accounts"
 

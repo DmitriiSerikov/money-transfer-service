@@ -7,7 +7,6 @@ import com.github.example.service.AccountService
 import com.github.example.service.TransactionExecutionService
 import com.github.example.service.TransactionService
 import io.micronaut.context.ApplicationContext
-import io.micronaut.context.env.PropertySource
 import org.junit.Test
 import org.junit.experimental.categories.Category
 import spock.lang.AutoCleanup
@@ -20,13 +19,11 @@ import java.util.concurrent.ExecutorCompletionService
 import java.util.concurrent.Executors
 
 @Category(IntegrationTest)
-class TransactionExecutionServiceConcurrentSpec extends Specification {
-
-    static CONFIGURATION = PropertySource.of(["processing.transactions.enabled": false, "processing.lockHolder.timeout": 5000])
+class TransactionExecutionServiceITSpec extends Specification {
 
     @Shared
     @AutoCleanup
-    def applicationContext = ApplicationContext.run CONFIGURATION
+    def applicationContext = ApplicationContext.run()
 
     @Shared
     def executionService = applicationContext.getBean TransactionExecutionService
