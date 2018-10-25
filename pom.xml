@@ -11,7 +11,7 @@
         <jdk.version>1.8</jdk.version>
         <groovy.version>2.5.2</groovy.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <sonar.exclusions>**/*Data.*</sonar.exclusions>
+        <sonar.exclusions>**/dto/*, **/exception/*</sonar.exclusions>
         <skip.unit.tests>false</skip.unit.tests>
         <skip.integration.tests>true</skip.integration.tests>
         <redirect.output.to.file>true</redirect.output.to.file>
