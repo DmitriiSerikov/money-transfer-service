@@ -1,3 +1,4 @@
 ignore:
 - "**/dto/*"
 - "**/exception/*"
+- "**/Application.java"
