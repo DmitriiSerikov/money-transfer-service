@@ -40,7 +40,7 @@ public class LockHolderImpl implements LockHolder {
                 .ifPresent(lock -> releaseLock(lockId, lock));
     }
 
-    @SuppressWarnings("squid:S2222")
+    @SuppressWarnings({"squid:S2142", "squid:S2222"})
     private void acquireLock(final String lockId, final ReentrantLock lock) {
         try {
             if (!lock.tryLock(timeout, TimeUnit.MILLISECONDS)) {
@@ -50,7 +50,6 @@ public class LockHolderImpl implements LockHolder {
         } catch (InterruptedException ex) {
             final Thread currentThread = Thread.currentThread();
             LOGGER.error("Thread {} where interrupted when acquire lock for id:{}", currentThread.getName(), lockId);
-            currentThread.interrupt();
             throw new CouldNotAcquireLockException("Lock not acquired due to interruption of thread, id:" + lockId, ex);
         }
     }
