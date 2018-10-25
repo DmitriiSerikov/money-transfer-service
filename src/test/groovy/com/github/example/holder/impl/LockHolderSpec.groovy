@@ -2,7 +2,6 @@ package com.github.example.holder.impl
 
 import com.blogspot.toomuchcoding.spock.subjcollabs.Subject
 import com.github.example.UnitTest
-import com.github.example.exception.CouldNotAcquireLockException
 import org.junit.Test
 import org.junit.experimental.categories.Category
 import spock.lang.Specification
@@ -25,6 +24,15 @@ class LockHolderSpec extends Specification {
     }
 
     @Test
+    def "should not throw exception when acquire lock that doesn't acquired before by any thread"() {
+        when:
+        lockHolder.acquire lockId
+
+        then:
+        notThrown Exception
+    }
+
+    @Test
     def "should not throw exception when try acquire already acquired lock second time"() {
         given:
         lockHolder.acquire lockId
@@ -33,7 +41,7 @@ class LockHolderSpec extends Specification {
         lockHolder.acquire lockId
 
         then:
-        notThrown CouldNotAcquireLockException
+        notThrown Exception
     }
 
     @Test
