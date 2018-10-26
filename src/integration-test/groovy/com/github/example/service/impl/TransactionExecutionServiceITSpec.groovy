@@ -35,15 +35,15 @@ class TransactionExecutionServiceITSpec extends Specification {
 
     @Test
     @Timeout(value = 10)
-    def "should preserve consistency of summary balance when executes concurrent transactions between two accounts"() {
+    def "should preserve consistency of summary balance and avoid deadlocks when executes concurrent transactions between two accounts"() {
         given:
-        def firstAccountId = accountService.createBy(new CommandCreateAccount(initialBalance: firstInitialBalance)).id
-        def secondAccountId = accountService.createBy(new CommandCreateAccount(initialBalance: secondInitialBalance)).id
+        def firstAccountId = accountService.createBy(new CommandCreateAccount(initialBalance: firstAccountBalance)).id
+        def secondAccountId = accountService.createBy(new CommandCreateAccount(initialBalance: secondAccountBalance)).id
         def txFromFirstToSecond = { transaction firstAccountId, secondAccountId, txAmount }
         def txFromSecondToFirst = { transaction secondAccountId, firstAccountId, txAmount }
 
         when:
-        executeConcurrentTransactions concurrentTxCount, txFromFirstToSecond, txFromSecondToFirst
+        executeConcurrentTransactions txCount, txFromFirstToSecond, txFromSecondToFirst
 
         then:
         def firstBalance = accountService.getById(firstAccountId).balance
@@ -51,21 +51,17 @@ class TransactionExecutionServiceITSpec extends Specification {
         expectedSummaryBalance == firstBalance + secondBalance
 
         where:
-        firstInitialBalance | secondInitialBalance | txAmount | concurrentTxCount || expectedSummaryBalance
-        1000                | 1000                 | 10       | 2000              || 2000
-        1000                | 1000                 | 1000     | 1000              || 2000
-        0                   | 1000                 | 1000     | 500               || 1000
-        0                   | 0                    | 500      | 100               || 0
+        firstAccountBalance | secondAccountBalance | txAmount | txCount || expectedSummaryBalance
+        1000                | 1000                 | 10       | 2000    || 2000
+        1000                | 2000                 | 1000     | 1000    || 3000
+        0                   | 1000                 | 1000     | 500     || 1000
+        0                   | 0                    | 500      | 100     || 0
     }
 
     def transaction(def firstAccountId, def secondAccountId, def amount) {
-        def command = new CommandCreateTransaction(referenceId: generateReferenceId(), sourceAccountId: firstAccountId, targetAccountId: secondAccountId, amount: amount)
+        def command = new CommandCreateTransaction(referenceId: new RandomString(40), sourceAccountId: firstAccountId, targetAccountId: secondAccountId, amount: amount)
         def transaction = transactionService.createBy command
         executionService.execute transaction.id
-    }
-
-    def generateReferenceId() {
-        new RandomString(40)
     }
 
     def executeConcurrentTransactions(int count, Closure txFromFirstToSecond, Closure txFromSecondToFirst) {

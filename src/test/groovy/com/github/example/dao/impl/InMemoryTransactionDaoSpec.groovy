@@ -46,7 +46,7 @@ class InMemoryTransactionDaoSpec extends Specification {
     }
 
     @Test
-    def "should throw exception when storage already contains transaction for this id"() {
+    def "should throw exception when storage already contains transaction with same reference id"() {
         given:
         inMemoryTransactionDao.insert transaction
 
@@ -55,7 +55,7 @@ class InMemoryTransactionDaoSpec extends Specification {
 
         then:
         def ex = thrown EntityAlreadyExistsException
-        ex.message == "Transaction already exists for id:" + transaction.id
+        ex.message == "Transaction already exists for referenceId:" + referenceId
     }
 
     @Test
@@ -91,7 +91,7 @@ class InMemoryTransactionDaoSpec extends Specification {
     @Test
     def "should return collection of all stored transactions sorted by creation date-time when storage contains more than one transaction"() {
         given:
-        def createdLaterTransaction = new Transaction(referenceId, firstAccountId, secondAccountId, ONE)
+        def createdLaterTransaction = new Transaction("ref_1", firstAccountId, secondAccountId, ONE)
         and:
         inMemoryTransactionDao.insert transaction
         inMemoryTransactionDao.insert createdLaterTransaction
@@ -115,8 +115,8 @@ class InMemoryTransactionDaoSpec extends Specification {
     @Test
     def "should return collection of pending transactions when storage contains transactions with different statuses"() {
         given:
-        def failedTransaction = new Transaction(referenceId, firstAccountId, secondAccountId, ONE).failed("Failed")
-        def executedTransaction = new Transaction(referenceId, firstAccountId, secondAccountId, ONE).executed()
+        def failedTransaction = new Transaction("ref_1", firstAccountId, secondAccountId, ONE).failed("Failed")
+        def executedTransaction = new Transaction("ref_2", firstAccountId, secondAccountId, ONE).executed()
         and:
         inMemoryTransactionDao.insert failedTransaction
         inMemoryTransactionDao.insert executedTransaction
@@ -133,7 +133,7 @@ class InMemoryTransactionDaoSpec extends Specification {
     @Test
     def "should return collection of pending transactions sorted by creation date-time when storage contains more than one pending transaction"() {
         given:
-        def createdLaterPendingTransaction = new Transaction(referenceId, firstAccountId, secondAccountId, ONE)
+        def createdLaterPendingTransaction = new Transaction("ref_1", firstAccountId, secondAccountId, ONE)
         and:
         inMemoryTransactionDao.insert transaction
         inMemoryTransactionDao.insert createdLaterPendingTransaction
@@ -148,7 +148,7 @@ class InMemoryTransactionDaoSpec extends Specification {
     @Test
     def "should return limited collection of pending transactions when storage contains more pending transactions then specified by limit"() {
         given:
-        def anotherPendingTransaction = new Transaction(referenceId, firstAccountId, secondAccountId, ONE)
+        def anotherPendingTransaction = new Transaction("ref_1", firstAccountId, secondAccountId, ONE)
         and:
         inMemoryTransactionDao.insert anotherPendingTransaction
         inMemoryTransactionDao.insert transaction

@@ -34,7 +34,7 @@ public interface TransactionDao {
      *
      * @param transaction the transaction entity for storing into the storage
      * @return the transaction entity persisted into the storage
-     * @throws EntityAlreadyExistsException if transaction with the unique identifier is already present
+     * @throws EntityAlreadyExistsException if transaction with the same reference id is already present
      */
     Transaction insert(Transaction transaction);
 

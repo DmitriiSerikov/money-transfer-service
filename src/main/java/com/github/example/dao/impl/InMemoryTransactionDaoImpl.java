@@ -26,6 +26,7 @@ public class InMemoryTransactionDaoImpl implements TransactionDao {
     private static final String TRANSACTION_PARAM = "Transaction";
 
     private final ConcurrentMap<UUID, Transaction> storage = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, UUID> referenceToIdMapping = new ConcurrentHashMap<>();
     private final LockHolder lockHolder;
 
     @Inject
@@ -52,12 +53,14 @@ public class InMemoryTransactionDaoImpl implements TransactionDao {
     public Transaction insert(final Transaction transaction) {
         Assert.notNull(transaction, TRANSACTION_PARAM);
 
-        return storage.compute(transaction.getId(), (id, previousValue) -> {
-            if (previousValue != null) {
-                throw new EntityAlreadyExistsException("Transaction already exists for id:" + id);
-            }
+        final UUID transactionId = transaction.getId();
+        final String referenceId = transaction.getReferenceId();
+
+        if (referenceToIdMapping.putIfAbsent(referenceId, transactionId) == null) {
+            storage.put(transactionId, transaction);
             return transaction;
-        });
+        }
+        throw new EntityAlreadyExistsException("Transaction already exists for referenceId:" + referenceId);
     }
 
     @Override
@@ -76,12 +79,10 @@ public class InMemoryTransactionDaoImpl implements TransactionDao {
 
         lockBy(transactionId);
         try {
-            return storage.compute(transactionId, (id, previousValue) -> {
-                if (previousValue == null) {
-                    throw new EntityNotFoundException("Transaction not exists for id:" + id);
-                }
+            if (storage.replace(transactionId, transaction) != null) {
                 return transaction;
-            });
+            }
+            throw new EntityNotFoundException("Transaction not exists for id:" + transactionId);
         } finally {
             unlockBy(transactionId);
         }

@@ -40,12 +40,12 @@ public class InMemoryAccountDaoImpl implements AccountDao {
     public Account insert(final Account account) {
         Assert.notNull(account, ACCOUNT_PARAM);
 
-        return storage.compute(account.getId(), (id, previousValue) -> {
-            if (previousValue != null) {
-                throw new EntityAlreadyExistsException("Account already exists for id:" + id);
-            }
+        final UUID accountId = account.getId();
+
+        if (storage.putIfAbsent(accountId, account) == null) {
             return account;
-        });
+        }
+        throw new EntityAlreadyExistsException("Account already exists for id:" + accountId);
     }
 
     @Override
@@ -64,12 +64,10 @@ public class InMemoryAccountDaoImpl implements AccountDao {
 
         lockBy(accountId);
         try {
-            return storage.compute(accountId, (id, previousValue) -> {
-                if (previousValue == null) {
-                    throw new EntityNotFoundException("Account not exists for id:" + id);
-                }
+            if (storage.replace(accountId, account) != null) {
                 return account;
-            });
+            }
+            throw new EntityNotFoundException("Account not exists for id:" + accountId);
         } finally {
             unlockBy(accountId);
         }
