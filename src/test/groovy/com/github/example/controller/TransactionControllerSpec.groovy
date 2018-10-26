@@ -31,7 +31,7 @@ class TransactionControllerSpec extends Specification {
 
     def request = Mock(HttpRequest)
     def command = new CommandCreateTransaction()
-    def transaction = new Transaction(fromString("a-b-c-d-e"), fromString("a-b-c-d-f"), ONE)
+    def transaction = new Transaction("ref", fromString("a-b-c-d-e"), fromString("a-b-c-d-f"), ONE)
     def transactionId = transaction.id
 
     @Test

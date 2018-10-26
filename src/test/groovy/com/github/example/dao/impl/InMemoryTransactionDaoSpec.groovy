@@ -25,11 +25,13 @@ class InMemoryTransactionDaoSpec extends Specification {
     LockHolder lockHolder = Mock()
 
     @Shared
+    def referenceId = "ref"
+    @Shared
     def firstAccountId = UUID.fromString "a-b-c-d-e"
     @Shared
     def secondAccountId = UUID.fromString "a-b-c-d-f"
     @Shared
-    def transaction = new Transaction(firstAccountId, secondAccountId, ONE)
+    def transaction = new Transaction(referenceId, firstAccountId, secondAccountId, ONE)
 
     def someUUID = UUID.fromString "0-0-0-0-0"
 
@@ -89,7 +91,7 @@ class InMemoryTransactionDaoSpec extends Specification {
     @Test
     def "should return collection of all stored transactions sorted by creation date-time when storage contains more than one transaction"() {
         given:
-        def createdLaterTransaction = new Transaction(firstAccountId, secondAccountId, ONE)
+        def createdLaterTransaction = new Transaction(referenceId, firstAccountId, secondAccountId, ONE)
         and:
         inMemoryTransactionDao.insert transaction
         inMemoryTransactionDao.insert createdLaterTransaction
@@ -113,8 +115,8 @@ class InMemoryTransactionDaoSpec extends Specification {
     @Test
     def "should return collection of pending transactions when storage contains transactions with different statuses"() {
         given:
-        def failedTransaction = new Transaction(firstAccountId, secondAccountId, ONE).failed("Failed")
-        def executedTransaction = new Transaction(firstAccountId, secondAccountId, ONE).executed()
+        def failedTransaction = new Transaction(referenceId, firstAccountId, secondAccountId, ONE).failed("Failed")
+        def executedTransaction = new Transaction(referenceId, firstAccountId, secondAccountId, ONE).executed()
         and:
         inMemoryTransactionDao.insert failedTransaction
         inMemoryTransactionDao.insert executedTransaction
@@ -131,7 +133,7 @@ class InMemoryTransactionDaoSpec extends Specification {
     @Test
     def "should return collection of pending transactions sorted by creation date-time when storage contains more than one pending transaction"() {
         given:
-        def createdLaterPendingTransaction = new Transaction(firstAccountId, secondAccountId, ONE)
+        def createdLaterPendingTransaction = new Transaction(referenceId, firstAccountId, secondAccountId, ONE)
         and:
         inMemoryTransactionDao.insert transaction
         inMemoryTransactionDao.insert createdLaterPendingTransaction
@@ -146,7 +148,7 @@ class InMemoryTransactionDaoSpec extends Specification {
     @Test
     def "should return limited collection of pending transactions when storage contains more pending transactions then specified by limit"() {
         given:
-        def anotherPendingTransaction = new Transaction(firstAccountId, secondAccountId, ONE)
+        def anotherPendingTransaction = new Transaction(referenceId, firstAccountId, secondAccountId, ONE)
         and:
         inMemoryTransactionDao.insert anotherPendingTransaction
         inMemoryTransactionDao.insert transaction

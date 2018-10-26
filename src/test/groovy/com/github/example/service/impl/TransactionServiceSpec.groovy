@@ -30,10 +30,11 @@ class TransactionServiceSpec extends Specification {
     def secondAccount = new Account(ONE)
     def sourceAccountId = firstAccount.id
     def targetAccountId = secondAccount.id
+    def referenceId = "ref"
     def amount = ONE
-    def transaction = new Transaction(sourceAccountId, targetAccountId, amount)
+    def transaction = new Transaction(referenceId, sourceAccountId, targetAccountId, amount)
     def transactionId = transaction.id
-    def someUUID = UUID.fromString "00000000-0000-0000-0000-000000000000"
+    def someUUID = UUID.fromString "0-0-0-0-0"
 
     def setup() {
         accountDao.getBy(sourceAccountId) >> firstAccount
@@ -128,13 +129,14 @@ class TransactionServiceSpec extends Specification {
     @Test
     def "should create transaction by given command and insert it into transactions storage when command for transaction creation is valid"() {
         given:
-        def command = new CommandCreateTransaction(sourceAccountId: sourceAccountId, targetAccountId: targetAccountId, amount: amount)
+        def command = new CommandCreateTransaction(referenceId: referenceId, sourceAccountId: sourceAccountId, targetAccountId: targetAccountId, amount: amount)
 
         when:
         transactionService.createBy command
 
         then:
         1 * transactionDao.insert({
+            it.referenceId == referenceId
             it.sourceAccountId == sourceAccountId
             it.targetAccountId == targetAccountId
             it.amount == amount
@@ -144,7 +146,7 @@ class TransactionServiceSpec extends Specification {
     @Test
     def "should return created transaction when transaction successfully inserted and returned by transactions storage"() {
         given:
-        def command = new CommandCreateTransaction(sourceAccountId: sourceAccountId, targetAccountId: targetAccountId, amount: amount)
+        def command = new CommandCreateTransaction(referenceId: referenceId, sourceAccountId: sourceAccountId, targetAccountId: targetAccountId, amount: amount)
         and:
         transactionDao.insert(_ as Transaction) >> transaction
 

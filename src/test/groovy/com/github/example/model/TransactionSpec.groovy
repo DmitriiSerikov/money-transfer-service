@@ -10,18 +10,21 @@ import static com.github.example.model.Transaction.TransactionStatus.*
 @Category(UnitTest)
 class TransactionSpec extends Specification {
 
-    def referenceId = "external_reference_id"
+    def referenceId = "ref"
     def firstAccountId = UUID.fromString "0-0-0-0-1"
     def secondAccountId = UUID.fromString "0-0-0-0-2"
 
     @Test
-    def "should throw exception when trying initialize transaction with null reference id"() {
+    def "should throw exception when trying initialize transaction with null or blank string instead of reference id"() {
         when:
-        new Transaction(null, firstAccountId, secondAccountId, BigDecimal.ONE)
+        new Transaction(refId, firstAccountId, secondAccountId, BigDecimal.ONE)
 
         then:
         def ex = thrown IllegalArgumentException
-        ex.message == "Reference identifier cannot be null"
+        ex.message == "Reference identifier should be not blank string"
+
+        where:
+        refId << [null, ""]
     }
 
     @Test

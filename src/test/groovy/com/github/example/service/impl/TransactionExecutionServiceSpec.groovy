@@ -30,6 +30,8 @@ class TransactionExecutionServiceSpec extends Specification {
     TransactionDao transactionDao = Mock()
 
     @Shared
+    def referenceId = "ref"
+    @Shared
     def firstAccount = new Account(ONE)
     @Shared
     def secondAccount = new Account(ONE)
@@ -38,12 +40,12 @@ class TransactionExecutionServiceSpec extends Specification {
     @Shared
     def secondAccountId = secondAccount.id
     @Shared
-    def transaction = new Transaction(firstAccountId, secondAccountId, ONE)
+    def transaction = new Transaction(referenceId, firstAccountId, secondAccountId, ONE)
     @Shared
     def transactionId = transaction.id
 
     def limit = 10
-    def someUUID = UUID.fromString "00000000-0000-0000-0000-000000000000"
+    def someUUID = UUID.fromString "0-0-0-0-0"
 
     def setup() {
         transactionDao.getBy(transactionId) >> transaction
@@ -66,7 +68,7 @@ class TransactionExecutionServiceSpec extends Specification {
     @Test
     def "should execute transactions for the same source account sequentially when transaction storage contains pending transactions only for one source account"() {
         given:
-        def transactionWithSameSourceAccount = new Transaction(firstAccountId, secondAccountId, ONE)
+        def transactionWithSameSourceAccount = new Transaction(referenceId, firstAccountId, secondAccountId, ONE)
         transactionDao.getBy(transactionWithSameSourceAccount.id) >> transactionWithSameSourceAccount
         and:
         transactionDao.findPending(limit) >> [transaction, transactionWithSameSourceAccount]
@@ -82,7 +84,7 @@ class TransactionExecutionServiceSpec extends Specification {
     @Test
     def "should execute transactions for the different accounts in parallel when transaction storage contains pending transactions between different accounts"() {
         given:
-        def transactionWithAnotherSourceAccount = new Transaction(secondAccountId, firstAccountId, ONE)
+        def transactionWithAnotherSourceAccount = new Transaction(referenceId, secondAccountId, firstAccountId, ONE)
         transactionDao.getBy(transactionWithAnotherSourceAccount.id) >> transactionWithAnotherSourceAccount
         and:
         transactionDao.findPending(limit) >> [transaction, transactionWithAnotherSourceAccount]
@@ -97,7 +99,7 @@ class TransactionExecutionServiceSpec extends Specification {
     @Test
     def "should not throw exception and stop execution of pending transactions when couldn't lock one of transactions"() {
         given:
-        def lockedTransaction = new Transaction(firstAccountId, secondAccountId, ONE)
+        def lockedTransaction = new Transaction(referenceId, firstAccountId, secondAccountId, ONE)
         def lockedTransactionId = lockedTransaction.id
         transactionDao.findPending(limit) >> [lockedTransaction, transaction]
         transactionDao.getBy(lockedTransactionId) >> lockedTransaction
@@ -116,7 +118,7 @@ class TransactionExecutionServiceSpec extends Specification {
     @Test
     def "should not throw exception and stop execution when one of transactions is not found during execution of pending transactions"() {
         given:
-        def phantomTransaction = new Transaction(firstAccountId, secondAccountId, ONE)
+        def phantomTransaction = new Transaction(referenceId, firstAccountId, secondAccountId, ONE)
         def phantomTransactionId = phantomTransaction.id
         transactionDao.findPending(limit) >> [phantomTransaction, transaction]
         and:
@@ -134,7 +136,7 @@ class TransactionExecutionServiceSpec extends Specification {
     @Test
     def "should not throw exception and stop execution when one of transactions already executed during execution of pending transactions"() {
         given:
-        def executedTransaction = new Transaction(firstAccountId, secondAccountId, ONE).executed()
+        def executedTransaction = new Transaction(referenceId, firstAccountId, secondAccountId, ONE).executed()
         def executedTransactionId = executedTransaction.id
         transactionDao.findPending(limit) >> [executedTransaction, transaction]
         and:
@@ -196,7 +198,7 @@ class TransactionExecutionServiceSpec extends Specification {
     @Test
     def "should throw exception when transaction with specified id is already executed"() {
         given:
-        def executedTransaction = new Transaction(firstAccountId, secondAccountId, ONE).executed()
+        def executedTransaction = new Transaction(referenceId, firstAccountId, secondAccountId, ONE).executed()
         def executedTransactionId = executedTransaction.id
         and:
         transactionDao.getBy(executedTransactionId) >> executedTransaction
@@ -241,7 +243,7 @@ class TransactionExecutionServiceSpec extends Specification {
     @Test
     def "should primarily lock account with lower id and then with greater id when executes transaction"() {
         given:
-        def transaction = new Transaction(sourceId, targetId, ONE)
+        def transaction = new Transaction(referenceId, sourceId, targetId, ONE)
         def transactionId = transaction.id
         transactionDao.getBy(transactionId) >> transaction
 
@@ -262,7 +264,7 @@ class TransactionExecutionServiceSpec extends Specification {
     @Test
     def "should mark transaction as failed when accounts storage doesn't contains source account for specified id and throws exception"() {
         given:
-        def transaction = new Transaction(someUUID, secondAccountId, ONE)
+        def transaction = new Transaction(referenceId, someUUID, secondAccountId, ONE)
         def transactionId = transaction.id
         transactionDao.getBy(transactionId) >> transaction
         and:
@@ -279,7 +281,7 @@ class TransactionExecutionServiceSpec extends Specification {
     @Test
     def "should mark transaction as failed when accounts storage doesn't contains target account for specified id and throws exception"() {
         given:
-        def transaction = new Transaction(firstAccountId, someUUID, ONE)
+        def transaction = new Transaction(referenceId, firstAccountId, someUUID, ONE)
         def transactionId = transaction.id
         transactionDao.getBy(transactionId) >> transaction
         and:
@@ -298,7 +300,7 @@ class TransactionExecutionServiceSpec extends Specification {
         given:
         def sourceAccount = new Account(sourceAccountBalance as BigDecimal)
         def sourceAccountId = sourceAccount.id
-        def transaction = new Transaction(sourceAccountId, secondAccountId, amount as BigDecimal)
+        def transaction = new Transaction(referenceId, sourceAccountId, secondAccountId, amount as BigDecimal)
         def transactionId = transaction.id
         transactionDao.getBy(transactionId) >> transaction
         and:
@@ -323,7 +325,7 @@ class TransactionExecutionServiceSpec extends Specification {
         given:
         def sourceAccount = new Account(sourceAccountBalance as BigDecimal)
         def sourceAccountId = sourceAccount.id
-        def transaction = new Transaction(sourceAccountId, secondAccountId, amount as BigDecimal)
+        def transaction = new Transaction(referenceId, sourceAccountId, secondAccountId, amount as BigDecimal)
         def transactionId = transaction.id
         transactionDao.getBy(transactionId) >> transaction
         and:
@@ -351,7 +353,7 @@ class TransactionExecutionServiceSpec extends Specification {
         given:
         def targetAccount = new Account(targetAccountBalance as BigDecimal)
         def targetAccountId = targetAccount.id
-        def transaction = new Transaction(firstAccountId, targetAccountId, amount as BigDecimal)
+        def transaction = new Transaction(referenceId, firstAccountId, targetAccountId, amount as BigDecimal)
         def transactionId = transaction.id
         transactionDao.getBy(transactionId) >> transaction
         and:

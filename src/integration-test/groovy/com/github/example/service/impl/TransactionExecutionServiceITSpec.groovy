@@ -7,6 +7,7 @@ import com.github.example.service.AccountService
 import com.github.example.service.TransactionExecutionService
 import com.github.example.service.TransactionService
 import io.micronaut.context.ApplicationContext
+import net.bytebuddy.utility.RandomString
 import org.junit.Test
 import org.junit.experimental.categories.Category
 import spock.lang.AutoCleanup
@@ -36,24 +37,35 @@ class TransactionExecutionServiceITSpec extends Specification {
     @Timeout(value = 10)
     def "should preserve consistency of summary balance when executes concurrent transactions between two accounts"() {
         given:
-        def concurrentTransactionsCount = 1000
-        def command = new CommandCreateAccount(initialBalance: 1000)
-        def firstAccountId = accountService.createBy(command).id
-        def secondAccountId = accountService.createBy(command).id
-        def txFromFirstToSecond = { transaction firstAccountId, secondAccountId }
-        def txFromSecondToFirst = { transaction secondAccountId, firstAccountId }
+        def firstAccountId = accountService.createBy(new CommandCreateAccount(initialBalance: firstInitialBalance)).id
+        def secondAccountId = accountService.createBy(new CommandCreateAccount(initialBalance: secondInitialBalance)).id
+        def txFromFirstToSecond = { transaction firstAccountId, secondAccountId, txAmount }
+        def txFromSecondToFirst = { transaction secondAccountId, firstAccountId, txAmount }
 
         when:
-        executeConcurrentTransactions concurrentTransactionsCount, txFromFirstToSecond, txFromSecondToFirst
+        executeConcurrentTransactions concurrentTxCount, txFromFirstToSecond, txFromSecondToFirst
 
         then:
-        accountService.getAll()*.balance.sum() == 2000
+        def firstBalance = accountService.getById(firstAccountId).balance
+        def secondBalance = accountService.getById(secondAccountId).balance
+        expectedSummaryBalance == firstBalance + secondBalance
+
+        where:
+        firstInitialBalance | secondInitialBalance | txAmount | concurrentTxCount || expectedSummaryBalance
+        1000                | 1000                 | 10       | 2000              || 2000
+        1000                | 1000                 | 1000     | 1000              || 2000
+        0                   | 1000                 | 1000     | 500               || 1000
+        0                   | 0                    | 500      | 100               || 0
     }
 
-    def transaction(def firstAccountId, def secondAccountId) {
-        def command = new CommandCreateTransaction(sourceAccountId: firstAccountId, targetAccountId: secondAccountId, amount: 10)
+    def transaction(def firstAccountId, def secondAccountId, def amount) {
+        def command = new CommandCreateTransaction(referenceId: generateReferenceId(), sourceAccountId: firstAccountId, targetAccountId: secondAccountId, amount: amount)
         def transaction = transactionService.createBy command
         executionService.execute transaction.id
+    }
+
+    def generateReferenceId() {
+        new RandomString(40)
     }
 
     def executeConcurrentTransactions(int count, Closure txFromFirstToSecond, Closure txFromSecondToFirst) {

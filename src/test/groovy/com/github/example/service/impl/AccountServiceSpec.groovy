@@ -23,7 +23,7 @@ class AccountServiceSpec extends Specification {
     AccountDao accountDao = Mock()
 
     def account = new Account(ONE)
-    def someUUID = UUID.fromString "00000000-0000-0000-0000-000000000000"
+    def someUUID = UUID.fromString "0-0-0-0-0"
 
     @Test
     def "should return empty collection of accounts when accounts storage returns empty collection"() {

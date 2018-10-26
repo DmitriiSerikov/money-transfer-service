@@ -8,9 +8,18 @@ import java.util.UUID;
 public class CommandCreateTransaction implements Serializable {
     private static final long serialVersionUID = 7226383963100484243L;
 
+    private String referenceId;
     private UUID sourceAccountId;
     private UUID targetAccountId;
     private BigDecimal amount;
+
+    public String getReferenceId() {
+        return referenceId;
+    }
+
+    public void setReferenceId(String referenceId) {
+        this.referenceId = referenceId;
+    }
 
     public UUID getSourceAccountId() {
         return sourceAccountId;

@@ -11,6 +11,7 @@ import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.runtime.server.EmbeddedServer
+import net.bytebuddy.utility.RandomString
 import org.junit.Test
 import org.junit.experimental.categories.Category
 import spock.lang.AutoCleanup
@@ -30,13 +31,8 @@ class TransactionControllerITSpec extends Specification {
     HttpClient client = embeddedServer.applicationContext.createBean(HttpClient, embeddedServer.getURL())
 
     def notExistAccountId = UUID.fromString "a-b-c-d-e"
-    def sourceAccountId
-    def targetAccountId
-
-    def setup() {
-        sourceAccountId = createAccount 100
-        targetAccountId = createAccount 0
-    }
+    def sourceAccountId = createAccount 100
+    def targetAccountId = createAccount 0
 
     @Test
     def "should return empty collection with 200 status code when transactions not exists yet"() {
@@ -80,9 +76,31 @@ class TransactionControllerITSpec extends Specification {
     }
 
     @Test
+    def "should return error with 400 status code when trying to create transaction with null reference id"() {
+        when:
+        createTransaction null, sourceAccountId, targetAccountId, 10
+
+        then:
+        def ex = thrown HttpClientResponseException
+        ex.status == HttpStatus.BAD_REQUEST
+        ex.message == "Reference identifier should be not blank string"
+    }
+
+    @Test
+    def "should return error with 400 status code when trying to create transaction with empty reference id"() {
+        when:
+        createTransaction "", sourceAccountId, targetAccountId, 10
+
+        then:
+        def ex = thrown HttpClientResponseException
+        ex.status == HttpStatus.BAD_REQUEST
+        ex.message == "Reference identifier should be not blank string"
+    }
+
+    @Test
     def "should return error with 400 status code when trying to create transaction for source account that not exists"() {
         when:
-        createTransaction notExistAccountId, targetAccountId, 10
+        createTransaction generateReferenceId(), notExistAccountId, targetAccountId, 10
 
         then:
         def ex = thrown HttpClientResponseException
@@ -93,7 +111,7 @@ class TransactionControllerITSpec extends Specification {
     @Test
     def "should return error with 400 status code when trying to create transaction for target account that not exists"() {
         when:
-        createTransaction sourceAccountId, notExistAccountId, 10
+        createTransaction generateReferenceId(), sourceAccountId, notExistAccountId, 10
 
         then:
         def ex = thrown HttpClientResponseException
@@ -104,7 +122,7 @@ class TransactionControllerITSpec extends Specification {
     @Test
     def "should return error with 400 status code when trying to create transaction with null amount"() {
         when:
-        createTransaction sourceAccountId, targetAccountId, null
+        createTransaction generateReferenceId(), sourceAccountId, targetAccountId, null
 
         then:
         def ex = thrown HttpClientResponseException
@@ -115,7 +133,7 @@ class TransactionControllerITSpec extends Specification {
     @Test
     def "should return error with 400 status code when trying to create transaction with negative amount"() {
         when:
-        createTransaction sourceAccountId, targetAccountId, -10
+        createTransaction generateReferenceId(), sourceAccountId, targetAccountId, -10
 
         then:
         def ex = thrown HttpClientResponseException
@@ -126,7 +144,7 @@ class TransactionControllerITSpec extends Specification {
     @Test
     def "should return error with 400 status code when trying to create transaction between same accounts"() {
         when:
-        createTransaction sourceAccountId, sourceAccountId, 10
+        createTransaction generateReferenceId(), sourceAccountId, sourceAccountId, 10
 
         then:
         def ex = thrown HttpClientResponseException
@@ -137,7 +155,7 @@ class TransactionControllerITSpec extends Specification {
     @Test
     def "should return 202 status code and location header when create transaction by valid command"() {
         given:
-        def command = new CommandCreateTransaction(sourceAccountId: sourceAccountId, targetAccountId: targetAccountId, amount: 10)
+        def command = new CommandCreateTransaction(referenceId: generateReferenceId(), sourceAccountId: sourceAccountId, targetAccountId: targetAccountId, amount: 10)
         def request = HttpRequest.POST TRANSACTION_RESOURCE_URI, command
 
         when:
@@ -152,7 +170,7 @@ class TransactionControllerITSpec extends Specification {
     def "should return transaction data with 200 status code when transaction with specified id exist"() {
         given:
         def amount = 100
-        def transactionId = createTransaction sourceAccountId, targetAccountId, amount
+        def transactionId = createTransaction generateReferenceId(), sourceAccountId, targetAccountId, amount
         and:
         def request = HttpRequest.GET TRANSACTION_RESOURCE_URI + "/" + transactionId
 
@@ -173,7 +191,7 @@ class TransactionControllerITSpec extends Specification {
         given:
         def request = HttpRequest.GET TRANSACTION_RESOURCE_URI
         and:
-        createTransaction sourceAccountId, targetAccountId, 10
+        createTransaction generateReferenceId(), sourceAccountId, targetAccountId, 10
 
         when:
         def response = client.toBlocking().exchange request, Collection.class
@@ -183,13 +201,17 @@ class TransactionControllerITSpec extends Specification {
         !response.body().empty
     }
 
-    def createTransaction(def sourceAccountId, def targetAccountId, def amount) {
-        def command = new CommandCreateTransaction(sourceAccountId: sourceAccountId, targetAccountId: targetAccountId, amount: amount)
+    def createTransaction(def referenceId, def sourceAccountId, def targetAccountId, def amount) {
+        def command = new CommandCreateTransaction(referenceId: referenceId, sourceAccountId: sourceAccountId, targetAccountId: targetAccountId, amount: amount)
         def request = HttpRequest.POST TRANSACTION_RESOURCE_URI, command
 
         def response = client.toBlocking().exchange request, TransactionData.class
 
         UUID.fromString response.header("Location") - (TRANSACTION_RESOURCE_URI + "/")
+    }
+
+    def generateReferenceId() {
+        new RandomString(40)
     }
 
     def createAccount(def initialBalance) {

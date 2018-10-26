@@ -45,7 +45,7 @@ public class TransactionServiceImpl implements TransactionService {
         checkAccountExistsById(sourceAccountId);
         checkAccountExistsById(targetAccountId);
 
-        final Transaction transaction = new Transaction(sourceAccountId, targetAccountId, command.getAmount());
+        final Transaction transaction = new Transaction(command.getReferenceId(), sourceAccountId, targetAccountId, command.getAmount());
         return transactionDao.insert(transaction);
     }
 
