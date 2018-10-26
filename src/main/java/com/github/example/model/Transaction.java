@@ -16,6 +16,7 @@ import java.util.UUID;
 public final class Transaction {
 
     private final UUID id;
+    private final String referenceId;
     private final UUID sourceAccountId;
     private final UUID targetAccountId;
     private final BigDecimal amount;
@@ -24,8 +25,9 @@ public final class Transaction {
     private final Instant updatedAt;
     private final String reasonCode;
 
-    public Transaction(final UUID sourceAccountId, final UUID targetAccountId, final BigDecimal amount) {
+    public Transaction(final String referenceId, final UUID sourceAccountId, final UUID targetAccountId, final BigDecimal amount) {
         Assert.notNull(amount, "Transaction amount");
+        Assert.notNull(referenceId, "Reference identifier");
         Assert.isTrue(amount.compareTo(BigDecimal.ZERO) > 0, "Transaction amount should be positive");
         Assert.isTrue(!sourceAccountId.equals(targetAccountId), "Transactions not allowed between same account id's");
 
@@ -35,6 +37,7 @@ public final class Transaction {
         this.updatedAt = currentInstant;
         this.reasonCode = null;
         this.status = TransactionStatus.PENDING;
+        this.referenceId = referenceId;
         this.sourceAccountId = sourceAccountId;
         this.targetAccountId = targetAccountId;
         this.amount = amount;
@@ -46,6 +49,7 @@ public final class Transaction {
         this.updatedAt = Instant.now();
         this.status = changedStatus;
         this.reasonCode = reasonCode;
+        this.referenceId = transaction.referenceId;
         this.sourceAccountId = transaction.sourceAccountId;
         this.targetAccountId = transaction.targetAccountId;
         this.amount = transaction.amount;
@@ -81,6 +85,10 @@ public final class Transaction {
 
     public String getReasonCode() {
         return reasonCode;
+    }
+
+    public String getReferenceId() {
+        return referenceId;
     }
 
     public Transaction executed() {
