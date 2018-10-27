@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 
-public class CommandCreateTransaction implements Serializable {
+public class CommandPerformTransfer implements Serializable {
     private static final long serialVersionUID = 7226383963100484243L;
 
     private String referenceId;

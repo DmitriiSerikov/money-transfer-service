@@ -31,7 +31,7 @@ public final class Transaction {
         Assert.notNull(amount, "Transaction amount");
         Assert.isTrue(!isNullOrEmpty(referenceId), "Reference identifier should be not blank string");
         Assert.isTrue(amount.compareTo(BigDecimal.ZERO) > 0, "Transaction amount should be positive");
-        Assert.isTrue(!sourceAccountId.equals(targetAccountId), "Transactions not allowed between same account id's");
+        Assert.isTrue(!sourceAccountId.equals(targetAccountId), "Transactions to the same account is not allowed");
 
         Instant currentInstant = Instant.now();
         this.id = UUID.randomUUID();

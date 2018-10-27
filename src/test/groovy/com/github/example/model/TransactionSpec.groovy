@@ -67,7 +67,7 @@ class TransactionSpec extends Specification {
 
         then:
         def ex = thrown IllegalArgumentException
-        ex.message == "Transactions not allowed between same account id's"
+        ex.message == "Transactions to the same account is not allowed"
     }
 
     @Test

@@ -2,7 +2,7 @@ package com.github.example.service.impl;
 
 import com.github.example.dao.AccountDao;
 import com.github.example.dao.TransactionDao;
-import com.github.example.dto.request.CommandCreateTransaction;
+import com.github.example.dto.request.CommandPerformTransfer;
 import com.github.example.exception.EntityNotFoundException;
 import com.github.example.model.Transaction;
 import com.github.example.service.TransactionService;
@@ -36,7 +36,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public Transaction createBy(final CommandCreateTransaction command) {
+    public Transaction transferBy(final CommandPerformTransfer command) {
         Assert.notNull(command);
 
         final UUID sourceAccountId = command.getSourceAccountId();

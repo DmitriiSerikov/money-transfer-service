@@ -177,7 +177,7 @@ class InMemoryTransactionDaoSpec extends Specification {
 
         then:
         def ex = thrown EntityNotFoundException
-        ex.message == "Transaction not exists for id:" + someUUID
+        ex.message == "Transaction not exists for id: " + someUUID
     }
 
     @Test
@@ -221,7 +221,7 @@ class InMemoryTransactionDaoSpec extends Specification {
 
         then:
         def ex = thrown EntityNotFoundException
-        ex.message == "Transaction not exists for id:" + transaction.id
+        ex.message == "Transaction not exists for id: " + transaction.id
     }
 
     @Test

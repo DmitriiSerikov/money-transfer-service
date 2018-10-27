@@ -15,7 +15,7 @@ import java.util.concurrent.Executors
 import static java.lang.Thread.currentThread
 
 @Category(IntegrationTest)
-class LockHolderITSpec extends Specification {
+class LockHolderISpec extends Specification {
 
     @Shared
     @AutoCleanup

@@ -98,7 +98,7 @@ class InMemoryAccountDaoSpec extends Specification {
 
         then:
         def ex = thrown EntityNotFoundException
-        ex.message == "Account not exists for id:" + someUUID
+        ex.message == "Account not exists for id: " + someUUID
     }
 
     @Test
@@ -142,7 +142,7 @@ class InMemoryAccountDaoSpec extends Specification {
 
         then:
         def ex = thrown EntityNotFoundException
-        ex.message == "Account not exists for id:" + account.id
+        ex.message == "Account not exists for id: " + account.id
     }
 
     @Test

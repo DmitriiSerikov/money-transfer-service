@@ -53,7 +53,7 @@ public class InMemoryAccountDaoImpl implements AccountDao {
         Assert.notNull(accountId, ACCOUNT_ID_PARAM);
 
         return Optional.ofNullable(storage.get(accountId))
-                .orElseThrow(() -> new EntityNotFoundException("Account not exists for id:" + accountId));
+                .orElseThrow(() -> new EntityNotFoundException("Account not exists for id: " + accountId));
     }
 
     @Override
@@ -67,7 +67,7 @@ public class InMemoryAccountDaoImpl implements AccountDao {
             if (storage.replace(accountId, account) != null) {
                 return account;
             }
-            throw new EntityNotFoundException("Account not exists for id:" + accountId);
+            throw new EntityNotFoundException("Account not exists for id: " + accountId);
         } finally {
             unlockBy(accountId);
         }

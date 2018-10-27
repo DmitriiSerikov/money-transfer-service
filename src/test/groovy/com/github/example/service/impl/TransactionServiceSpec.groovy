@@ -5,7 +5,7 @@ import com.blogspot.toomuchcoding.spock.subjcollabs.Subject
 import com.github.example.UnitTest
 import com.github.example.dao.AccountDao
 import com.github.example.dao.TransactionDao
-import com.github.example.dto.request.CommandCreateTransaction
+import com.github.example.dto.request.CommandPerformTransfer
 import com.github.example.exception.EntityNotFoundException
 import com.github.example.model.Account
 import com.github.example.model.Transaction
@@ -92,7 +92,7 @@ class TransactionServiceSpec extends Specification {
     @Test
     def "should throw exception when command for transaction creation is null"() {
         when:
-        transactionService.createBy null
+        transactionService.transferBy null
 
         then:
         thrown IllegalArgumentException
@@ -101,12 +101,12 @@ class TransactionServiceSpec extends Specification {
     @Test
     def "should throw exception when accounts storage doesn't contains entity for given source account id and throws exception"() {
         given:
-        def command = new CommandCreateTransaction(sourceAccountId: someUUID, targetAccountId: targetAccountId)
+        def command = new CommandPerformTransfer(sourceAccountId: someUUID, targetAccountId: targetAccountId)
         and:
         accountDao.getBy(sourceAccountId) >> { throw new EntityNotFoundException("Not found") }
 
         when:
-        transactionService.createBy command
+        transactionService.transferBy command
 
         then:
         thrown IllegalArgumentException
@@ -115,12 +115,12 @@ class TransactionServiceSpec extends Specification {
     @Test
     def "should throw exception when accounts storage doesn't contains entity for given target account id and throws exception"() {
         given:
-        def command = new CommandCreateTransaction(sourceAccountId: sourceAccountId, targetAccountId: someUUID)
+        def command = new CommandPerformTransfer(sourceAccountId: sourceAccountId, targetAccountId: someUUID)
         and:
         accountDao.getBy(someUUID) >> { throw new EntityNotFoundException("Not found") }
 
         when:
-        transactionService.createBy command
+        transactionService.transferBy command
 
         then:
         thrown IllegalArgumentException
@@ -129,10 +129,10 @@ class TransactionServiceSpec extends Specification {
     @Test
     def "should create transaction by given command and insert it into transactions storage when command for transaction creation is valid"() {
         given:
-        def command = new CommandCreateTransaction(referenceId: referenceId, sourceAccountId: sourceAccountId, targetAccountId: targetAccountId, amount: amount)
+        def command = new CommandPerformTransfer(referenceId: referenceId, sourceAccountId: sourceAccountId, targetAccountId: targetAccountId, amount: amount)
 
         when:
-        transactionService.createBy command
+        transactionService.transferBy command
 
         then:
         1 * transactionDao.insert({
@@ -146,12 +146,12 @@ class TransactionServiceSpec extends Specification {
     @Test
     def "should return created transaction when transaction successfully inserted and returned by transactions storage"() {
         given:
-        def command = new CommandCreateTransaction(referenceId: referenceId, sourceAccountId: sourceAccountId, targetAccountId: targetAccountId, amount: amount)
+        def command = new CommandPerformTransfer(referenceId: referenceId, sourceAccountId: sourceAccountId, targetAccountId: targetAccountId, amount: amount)
         and:
         transactionDao.insert(_ as Transaction) >> transaction
 
         when:
-        def result = transactionService.createBy command
+        def result = transactionService.transferBy command
 
         then:
         result == transaction

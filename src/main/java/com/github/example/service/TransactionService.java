@@ -1,6 +1,6 @@
 package com.github.example.service;
 
-import com.github.example.dto.request.CommandCreateTransaction;
+import com.github.example.dto.request.CommandPerformTransfer;
 import com.github.example.exception.EntityNotFoundException;
 import com.github.example.model.Transaction;
 
@@ -27,14 +27,17 @@ public interface TransactionService {
     Transaction getById(UUID transactionId);
 
     /**
-     * Creates transaction with attributes specified by command.
+     * Creates money transfer transaction in accordance
+     * with command and tries to execute it synchronously.
+     * In case it's not executed synchronously it will be
+     * postponed and executed asynchronously by scheduled job.
      *
      * @param command dto with attributes for transaction creation
-     * @return the successfully created transaction
+     * @return the transaction with actual status of execution
      * @throws IllegalArgumentException if one of transaction participants
      *                                  is not found by the unique identifier,
      *                                  transaction between accounts with same identifier,
      *                                  amount for transaction is {@code null} or less than zero
      */
-    Transaction createBy(CommandCreateTransaction command);
+    Transaction transferBy(CommandPerformTransfer command);
 }

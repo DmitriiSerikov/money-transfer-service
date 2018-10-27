@@ -68,7 +68,7 @@ public class InMemoryTransactionDaoImpl implements TransactionDao {
         Assert.notNull(transactionId, TRANSACTION_ID_PARAM);
 
         return Optional.ofNullable(storage.get(transactionId))
-                .orElseThrow(() -> new EntityNotFoundException("Transaction not exists for id:" + transactionId));
+                .orElseThrow(() -> new EntityNotFoundException("Transaction not exists for id: " + transactionId));
     }
 
     @Override
@@ -82,7 +82,7 @@ public class InMemoryTransactionDaoImpl implements TransactionDao {
             if (storage.replace(transactionId, transaction) != null) {
                 return transaction;
             }
-            throw new EntityNotFoundException("Transaction not exists for id:" + transactionId);
+            throw new EntityNotFoundException("Transaction not exists for id: " + transactionId);
         } finally {
             unlockBy(transactionId);
         }

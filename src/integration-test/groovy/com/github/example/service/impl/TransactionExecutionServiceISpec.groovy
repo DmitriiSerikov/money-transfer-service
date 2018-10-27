@@ -1,13 +1,13 @@
 package com.github.example.service.impl
 
+import com.github.example.ITestSupport
 import com.github.example.IntegrationTest
 import com.github.example.dto.request.CommandCreateAccount
-import com.github.example.dto.request.CommandCreateTransaction
+import com.github.example.dto.request.CommandPerformTransfer
 import com.github.example.service.AccountService
 import com.github.example.service.TransactionExecutionService
 import com.github.example.service.TransactionService
 import io.micronaut.context.ApplicationContext
-import net.bytebuddy.utility.RandomString
 import org.junit.Test
 import org.junit.experimental.categories.Category
 import spock.lang.AutoCleanup
@@ -21,7 +21,7 @@ import java.util.concurrent.Executors
 import static io.micronaut.context.env.PropertySource.of
 
 @Category(IntegrationTest)
-class TransactionExecutionServiceITSpec extends Specification {
+class TransactionExecutionServiceISpec extends Specification implements ITestSupport {
 
     @Shared
     @AutoCleanup
@@ -64,7 +64,7 @@ class TransactionExecutionServiceITSpec extends Specification {
         given:
         def firstAccountId = accountService.createBy(new CommandCreateAccount(initialBalance: startBalance)).id
         def secondAccountId = accountService.createBy(new CommandCreateAccount(initialBalance: startBalance)).id
-        def transaction = transactionService.createBy new CommandCreateTransaction(referenceId: referenceId, sourceAccountId: firstAccountId, targetAccountId: secondAccountId, amount: txAmount)
+        def transaction = transactionService.transferBy new CommandPerformTransfer(referenceId: referenceId, sourceAccountId: firstAccountId, targetAccountId: secondAccountId, amount: txAmount)
 
         when:
         def result = executeConcurrentTasks count, { executionService.execute transaction.id }
@@ -80,8 +80,8 @@ class TransactionExecutionServiceITSpec extends Specification {
     }
 
     def transfer(def firstAccountId, def secondAccountId, def amount) {
-        def command = new CommandCreateTransaction(referenceId: referenceId, sourceAccountId: firstAccountId, targetAccountId: secondAccountId, amount: amount)
-        def transaction = transactionService.createBy command
+        def command = new CommandPerformTransfer(referenceId: referenceId, sourceAccountId: firstAccountId, targetAccountId: secondAccountId, amount: amount)
+        def transaction = transactionService.transferBy command
         executionService.execute transaction.id
     }
 
@@ -116,9 +116,5 @@ class TransactionExecutionServiceITSpec extends Specification {
         executor.shutdown()
 
         [failed: failed, success: success]
-    }
-
-    def getReferenceId() {
-        new RandomString(40)
     }
 }
