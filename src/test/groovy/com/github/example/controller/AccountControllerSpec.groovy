@@ -2,6 +2,7 @@ package com.github.example.controller
 
 import com.blogspot.toomuchcoding.spock.subjcollabs.Collaborator
 import com.blogspot.toomuchcoding.spock.subjcollabs.Subject
+import com.github.example.TestSupport
 import com.github.example.UnitTest
 import com.github.example.dto.request.CommandCreateAccount
 import com.github.example.dto.response.AccountData
@@ -15,10 +16,8 @@ import org.junit.experimental.categories.Category
 import org.modelmapper.ModelMapper
 import spock.lang.Specification
 
-import static java.math.BigDecimal.ONE
-
 @Category(UnitTest)
-class AccountControllerSpec extends Specification {
+class AccountControllerSpec extends Specification implements TestSupport {
 
     @Subject
     AccountController controller
@@ -30,11 +29,11 @@ class AccountControllerSpec extends Specification {
 
     def request = Mock(HttpRequest)
     def command = new CommandCreateAccount()
-    def account = new Account(ONE)
+    def account = AccountStub()
     def accountId = account.id
 
     @Test
-    def "should respond with empty list when service return null or empty collection while getting all accounts"() {
+    def 'should respond with empty collection when service return null or empty collection while getting all accounts'() {
         given:
         accountService.getAll() >> accounts
 
@@ -49,7 +48,7 @@ class AccountControllerSpec extends Specification {
     }
 
     @Test
-    def "should use mapper for conversion when service returns not empty collection while getting all accounts"() {
+    def 'should use mapper for conversion when service returns not empty collection while getting all accounts'() {
         given:
         def accounts = [account]
         accountService.getAll() >> accounts
@@ -62,9 +61,9 @@ class AccountControllerSpec extends Specification {
     }
 
     @Test
-    def "should throw exception when service not found account and throws exception"() {
+    def 'should throw exception when service does not found account and throws exception'() {
         given:
-        accountService.getById(accountId) >> { throw new EntityNotFoundException("Not found") }
+        accountService.getById(accountId) >> { throw new EntityNotFoundException('Not found') }
 
         when:
         controller.getAccountById accountId
@@ -74,7 +73,7 @@ class AccountControllerSpec extends Specification {
     }
 
     @Test
-    def "should respond with 'ok' status code when account for specified id is returned by service"() {
+    def 'should respond with OK code when account for specified id is returned by service'() {
         given:
         accountService.getById(accountId) >> account
 
@@ -86,7 +85,7 @@ class AccountControllerSpec extends Specification {
     }
 
     @Test
-    def "should use mapper for conversion when account for specified id is returned by service"() {
+    def 'should use mapper for conversion when account for specified id is returned by service'() {
         given:
         accountService.getById(accountId) >> account
 
@@ -98,7 +97,7 @@ class AccountControllerSpec extends Specification {
     }
 
     @Test
-    def "should throw exception when service can't create account and throws exception"() {
+    def 'should throw exception when service could not create account and throws exception'() {
         given:
         accountService.createBy(command) >> { throw new IllegalArgumentException() }
 
@@ -110,7 +109,7 @@ class AccountControllerSpec extends Specification {
     }
 
     @Test
-    def "should respond with 'created' status code when service successfully created account by command"() {
+    def 'should respond with Created code when service successfully created account by command'() {
         given:
         accountService.createBy(command) >> account
 
@@ -122,21 +121,21 @@ class AccountControllerSpec extends Specification {
     }
 
     @Test
-    def "should respond with resource location header when service successfully created account by command"() {
+    def 'should respond with resource location header when service successfully created account by command'() {
         given:
         accountService.createBy(command) >> account
         and:
-        request.getPath() >> "/resource"
+        request.getPath() >> '/resource'
 
         when:
         def result = controller.createAccount command, request
 
         then:
-        result.header("Location") == "/resource/" + accountId
+        result.header('Location') == '/resource/' + accountId
     }
 
     @Test
-    def "should use mapper for conversion when service successfully created and returned account by command"() {
+    def 'should use mapper for conversion when service successfully created and returned account by command'() {
         given:
         accountService.createBy(command) >> account
 
@@ -148,7 +147,7 @@ class AccountControllerSpec extends Specification {
     }
 
     @Test
-    def "should use account data as dto when convert responses from internal model"() {
+    def 'should use account data as dto when convert responses from internal model'() {
         when:
         def result = controller.getDtoClass()
 
