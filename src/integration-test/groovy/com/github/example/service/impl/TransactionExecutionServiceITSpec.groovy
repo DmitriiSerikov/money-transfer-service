@@ -13,18 +13,19 @@ import org.junit.experimental.categories.Category
 import spock.lang.AutoCleanup
 import spock.lang.Shared
 import spock.lang.Specification
-import spock.lang.Timeout
 
 import java.util.concurrent.CyclicBarrier
 import java.util.concurrent.ExecutorCompletionService
 import java.util.concurrent.Executors
+
+import static io.micronaut.context.env.PropertySource.of
 
 @Category(IntegrationTest)
 class TransactionExecutionServiceITSpec extends Specification {
 
     @Shared
     @AutoCleanup
-    def applicationContext = ApplicationContext.run()
+    def applicationContext = ApplicationContext.run of(['processing.transactions.enabled': false])
 
     @Shared
     def executionService = applicationContext.getBean TransactionExecutionService
@@ -34,54 +35,90 @@ class TransactionExecutionServiceITSpec extends Specification {
     def accountService = applicationContext.getBean AccountService
 
     @Test
-    @Timeout(value = 10)
-    def "should preserve consistency of summary balance and avoid deadlocks when executes concurrent transactions between two accounts"() {
+    def 'should preserve consistency of summary balance and avoid deadlocks when execute concurrent transactions between two accounts'() {
         given:
-        def firstAccountId = accountService.createBy(new CommandCreateAccount(initialBalance: firstAccountBalance)).id
-        def secondAccountId = accountService.createBy(new CommandCreateAccount(initialBalance: secondAccountBalance)).id
-        def txFromFirstToSecond = { transaction firstAccountId, secondAccountId, txAmount }
-        def txFromSecondToFirst = { transaction secondAccountId, firstAccountId, txAmount }
+        def firstAccountId = accountService.createBy(new CommandCreateAccount(initialBalance: firstStartBalance)).id
+        def secondAccountId = accountService.createBy(new CommandCreateAccount(initialBalance: secondStartBalance)).id
+        def txFromFirstToSecond = { transfer firstAccountId, secondAccountId, txAmount }
+        def txFromSecondToFirst = { transfer secondAccountId, firstAccountId, txAmount }
 
         when:
-        executeConcurrentTransactions txCount, txFromFirstToSecond, txFromSecondToFirst
+        def result = executeConcurrentTasks count, txFromFirstToSecond, txFromSecondToFirst
+        def firstFinalBalance = accountService.getById(firstAccountId).balance
+        def secondFinalBalance = accountService.getById(secondAccountId).balance
 
         then:
-        def firstBalance = accountService.getById(firstAccountId).balance
-        def secondBalance = accountService.getById(secondAccountId).balance
-        expectedSummaryBalance == firstBalance + secondBalance
+        expectedSummaryBalance == firstFinalBalance + secondFinalBalance
+        result.success == count
+        result.failed == 0
 
         where:
-        firstAccountBalance | secondAccountBalance | txAmount | txCount || expectedSummaryBalance
-        1000                | 1000                 | 10       | 2000    || 2000
-        1000                | 2000                 | 1000     | 1000    || 3000
-        0                   | 1000                 | 1000     | 500     || 1000
-        0                   | 0                    | 500      | 100     || 0
+        firstStartBalance | secondStartBalance | txAmount | count || expectedSummaryBalance
+        1000              | 1000               | 10       | 2000  || 2000
+        0                 | 1000               | 1000     | 1000  || 1000
+        0                 | 0                  | 500      | 500   || 0
     }
 
-    def transaction(def firstAccountId, def secondAccountId, def amount) {
-        def command = new CommandCreateTransaction(referenceId: new RandomString(40), sourceAccountId: firstAccountId, targetAccountId: secondAccountId, amount: amount)
+    @Test
+    def 'should execute transaction successfully only once and avoid deadlocks when try execute same transaction concurrently'() {
+        given:
+        def firstAccountId = accountService.createBy(new CommandCreateAccount(initialBalance: startBalance)).id
+        def secondAccountId = accountService.createBy(new CommandCreateAccount(initialBalance: startBalance)).id
+        def transaction = transactionService.createBy new CommandCreateTransaction(referenceId: referenceId, sourceAccountId: firstAccountId, targetAccountId: secondAccountId, amount: txAmount)
+
+        when:
+        def result = executeConcurrentTasks count, { executionService.execute transaction.id }
+
+        then:
+        result.success == expectedSuccessCount
+        result.failed == expectedFailedCount
+
+        where:
+        startBalance | txAmount | count || expectedSuccessCount | expectedFailedCount
+        1000         | 1000     | 500   || 1                    | 499
+        2000         | 10       | 1000  || 1                    | 999
+    }
+
+    def transfer(def firstAccountId, def secondAccountId, def amount) {
+        def command = new CommandCreateTransaction(referenceId: referenceId, sourceAccountId: firstAccountId, targetAccountId: secondAccountId, amount: amount)
         def transaction = transactionService.createBy command
         executionService.execute transaction.id
     }
 
-    def executeConcurrentTransactions(int count, Closure txFromFirstToSecond, Closure txFromSecondToFirst) {
+    def executeConcurrentTasks(int count, Closure... tasks) {
         def executor = Executors.newFixedThreadPool(count)
         def completionService = new ExecutorCompletionService<>(executor)
         def barrier = new CyclicBarrier(count)
 
         count.times {
-            def closure = it % 2 == 0 ? txFromFirstToSecond : txFromSecondToFirst
+            def task = it % 2 == 0 ? tasks.first() : tasks.last()
             completionService.submit({
                 barrier.await()
-                closure.call()
+                task.call()
             })
         }
 
         int executed = 0
+        int failed = 0
+        int success = 0
         while (executed < count) {
             def future = completionService.take()
-            if (future.done) executed++
+            if (future.done) {
+                executed++
+                try {
+                    future.get()
+                    success++
+                } catch (ignored) {
+                    failed++
+                }
+            }
         }
         executor.shutdown()
+
+        [failed: failed, success: success]
+    }
+
+    def getReferenceId() {
+        new RandomString(40)
     }
 }

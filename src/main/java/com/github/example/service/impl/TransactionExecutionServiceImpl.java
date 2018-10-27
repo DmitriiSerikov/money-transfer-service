@@ -58,7 +58,7 @@ public class TransactionExecutionServiceImpl implements TransactionExecutionServ
         transactionDao.lockBy(transactionId);
 
         try {
-            Transaction transaction = transactionDao.getBy(transactionId);
+            final Transaction transaction = transactionDao.getBy(transactionId);
             checkTransactionStatus(transaction);
 
             final UUID sourceAccountId = transaction.getSourceAccountId();
