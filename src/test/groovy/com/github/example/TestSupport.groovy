@@ -9,11 +9,18 @@ import static java.util.UUID.fromString
 @CompileStatic
 trait TestSupport {
 
-    Account AccountStub() {
-        new Account(10 as BigDecimal)
+    final UUID notExistResourceId = fromString 'f-f-f-f-f'
+    final UUID firstAccountId = fromString 'a-b-c-d-0'
+    final UUID secondAccountId = fromString 'a-b-c-d-1'
+    final String referenceId = 'reference'
+    final BigDecimal amount = 10
+
+    Account AccountStub(BigDecimal initialBalance = 10) {
+        new Account(initialBalance)
     }
 
-    Transaction TransactionStub() {
-        new Transaction("ref", fromString("a-b-c-d-e"), fromString("a-b-c-d-f"), 10 as BigDecimal)
+    Transaction TransactionStub(UUID sourceAccountId = firstAccountId, String refId = referenceId,
+                                UUID targetAccountId = secondAccountId, BigDecimal txAmount = amount) {
+        new Transaction(refId, sourceAccountId, targetAccountId, txAmount)
     }
 }

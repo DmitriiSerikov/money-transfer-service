@@ -2,17 +2,18 @@ package com.github.example.service.impl
 
 import com.github.example.ITestSupport
 import com.github.example.IntegrationTest
-import com.github.example.dto.request.CommandCreateAccount
-import com.github.example.dto.request.CommandPerformTransfer
-import com.github.example.service.AccountService
+import com.github.example.dao.AccountDao
+import com.github.example.dao.TransactionDao
+import com.github.example.model.Account
+import com.github.example.model.Transaction
 import com.github.example.service.TransactionExecutionService
-import com.github.example.service.TransactionService
 import io.micronaut.context.ApplicationContext
 import org.junit.Test
 import org.junit.experimental.categories.Category
 import spock.lang.AutoCleanup
 import spock.lang.Shared
 import spock.lang.Specification
+import spock.lang.Timeout
 
 import java.util.concurrent.CyclicBarrier
 import java.util.concurrent.ExecutorCompletionService
@@ -30,22 +31,23 @@ class TransactionExecutionServiceISpec extends Specification implements ITestSup
     @Shared
     def executionService = applicationContext.getBean TransactionExecutionService
     @Shared
-    def transactionService = applicationContext.getBean TransactionService
+    def transactionDao = applicationContext.getBean TransactionDao
     @Shared
-    def accountService = applicationContext.getBean AccountService
+    def accountDao = applicationContext.getBean AccountDao
 
     @Test
+    @Timeout(10)
     def 'should preserve consistency of summary balance and avoid deadlocks when execute concurrent transactions between two accounts'() {
         given:
-        def firstAccountId = accountService.createBy(new CommandCreateAccount(initialBalance: firstStartBalance)).id
-        def secondAccountId = accountService.createBy(new CommandCreateAccount(initialBalance: secondStartBalance)).id
-        def txFromFirstToSecond = { transfer firstAccountId, secondAccountId, txAmount }
-        def txFromSecondToFirst = { transfer secondAccountId, firstAccountId, txAmount }
+        def firstAccountId = createAccount firstStartBalance as BigDecimal
+        def secondAccountId = createAccount secondStartBalance as BigDecimal
+        def txFromFirstToSecond = { executeTransaction firstAccountId, secondAccountId, txAmount as BigDecimal }
+        def txFromSecondToFirst = { executeTransaction secondAccountId, firstAccountId, txAmount as BigDecimal }
 
         when:
         def result = executeConcurrentTasks count, txFromFirstToSecond, txFromSecondToFirst
-        def firstFinalBalance = accountService.getById(firstAccountId).balance
-        def secondFinalBalance = accountService.getById(secondAccountId).balance
+        def firstFinalBalance = accountDao.getBy(firstAccountId).balance
+        def secondFinalBalance = accountDao.getBy(secondAccountId).balance
 
         then:
         expectedSummaryBalance == firstFinalBalance + secondFinalBalance
@@ -60,14 +62,15 @@ class TransactionExecutionServiceISpec extends Specification implements ITestSup
     }
 
     @Test
+    @Timeout(10)
     def 'should execute transaction successfully only once and avoid deadlocks when try execute same transaction concurrently'() {
         given:
-        def firstAccountId = accountService.createBy(new CommandCreateAccount(initialBalance: startBalance)).id
-        def secondAccountId = accountService.createBy(new CommandCreateAccount(initialBalance: startBalance)).id
-        def transaction = transactionService.transferBy new CommandPerformTransfer(referenceId: referenceId, sourceAccountId: firstAccountId, targetAccountId: secondAccountId, amount: txAmount)
+        def firstAccountId = createAccount startBalance as BigDecimal
+        def secondAccountId = createAccount startBalance as BigDecimal
+        def transactionId = createTransaction firstAccountId, secondAccountId, txAmount as BigDecimal
 
         when:
-        def result = executeConcurrentTasks count, { executionService.execute transaction.id }
+        def result = executeConcurrentTasks count, { executionService.executeBy transactionId }
 
         then:
         result.success == expectedSuccessCount
@@ -77,12 +80,6 @@ class TransactionExecutionServiceISpec extends Specification implements ITestSup
         startBalance | txAmount | count || expectedSuccessCount | expectedFailedCount
         1000         | 1000     | 500   || 1                    | 499
         2000         | 10       | 1000  || 1                    | 999
-    }
-
-    def transfer(def firstAccountId, def secondAccountId, def amount) {
-        def command = new CommandPerformTransfer(referenceId: referenceId, sourceAccountId: firstAccountId, targetAccountId: secondAccountId, amount: amount)
-        def transaction = transactionService.transferBy command
-        executionService.execute transaction.id
     }
 
     def executeConcurrentTasks(int count, Closure... tasks) {
@@ -116,5 +113,20 @@ class TransactionExecutionServiceISpec extends Specification implements ITestSup
         executor.shutdown()
 
         [failed: failed, success: success]
+    }
+
+    def createAccount(BigDecimal initialBalance) {
+        def account = new Account(initialBalance)
+        accountDao.insert(account).id
+    }
+
+    def createTransaction(UUID firstAccountId, UUID secondAccountId, BigDecimal amount) {
+        def transaction = new Transaction(referenceId, firstAccountId, secondAccountId, amount)
+        transactionDao.insert(transaction).id
+    }
+
+    def executeTransaction(UUID firstAccountId, UUID secondAccountId, BigDecimal amount) {
+        def transactionId = createTransaction firstAccountId, secondAccountId, amount
+        executionService.executeBy transactionId
     }
 }

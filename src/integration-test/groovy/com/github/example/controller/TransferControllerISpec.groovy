@@ -32,7 +32,7 @@ class TransferControllerISpec extends Specification implements ITestSupport {
     def secondAccountId
 
     def setup() {
-        def request = HttpRequest.POST "$API_V1_ROOT/accounts", [initialBalance: 100] as CommandCreateAccount
+        def request = HttpRequest.POST "$apiV1Root/accounts", [initialBalance: 100] as CommandCreateAccount
 
         firstAccountId = client.toBlocking().exchange request, AccountData body().id
         secondAccountId = client.toBlocking().exchange request, AccountData body().id
@@ -63,23 +63,23 @@ class TransferControllerISpec extends Specification implements ITestSupport {
     @Test
     def 'should return response with error message and Bad Request code when trying to perform transfer from account that does not exist'() {
         when:
-        performTransfer sourceAccountId: NOT_EXIST_RESOURCE_ID
+        performTransfer sourceAccountId: notExistResourceId
 
         then:
         def ex = thrown HttpClientResponseException
         ex.status == HttpStatus.BAD_REQUEST
-        ex.message == "Account not exists for id: $NOT_EXIST_RESOURCE_ID"
+        ex.message == "Account not exists for id: $notExistResourceId"
     }
 
     @Test
     def 'should return response with error message and Bad Request code when trying to perform transfer to account that does not exist'() {
         when:
-        performTransfer targetAccountId: NOT_EXIST_RESOURCE_ID
+        performTransfer targetAccountId: notExistResourceId
 
         then:
         def ex = thrown HttpClientResponseException
         ex.status == HttpStatus.BAD_REQUEST
-        ex.message == "Account not exists for id: $NOT_EXIST_RESOURCE_ID"
+        ex.message == "Account not exists for id: $notExistResourceId"
     }
 
     @Test
@@ -133,7 +133,7 @@ class TransferControllerISpec extends Specification implements ITestSupport {
                        targetAccountId: opts.targetAccountId ?: secondAccountId,
                        referenceId    : opts.containsKey('referenceId') ? opts.referenceId : referenceId,
                        amount         : opts.containsKey('amount') ? opts.amount : 10] as CommandPerformTransfer
-        def request = HttpRequest.POST "$API_V1_ROOT/transfers", command
+        def request = HttpRequest.POST "$apiV1Root/transfers", command
 
         client.toBlocking().exchange request, ExecutionResultData
     }

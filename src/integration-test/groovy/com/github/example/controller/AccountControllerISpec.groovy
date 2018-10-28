@@ -29,7 +29,7 @@ class AccountControllerISpec extends Specification implements ITestSupport {
     @Test
     def 'should return response with empty collection and OK code when accounts are not exists yet'() {
         given:
-        def request = HttpRequest.GET "$API_V1_ROOT/accounts"
+        def request = HttpRequest.GET "$apiV1Root/accounts"
 
         when:
         def response = client.toBlocking().exchange request, Collection
@@ -42,7 +42,7 @@ class AccountControllerISpec extends Specification implements ITestSupport {
     @Test
     def 'should return response with error message and Not Found code when account with specified id does not exist'() {
         given:
-        def request = HttpRequest.GET "$API_V1_ROOT/accounts/$NOT_EXIST_RESOURCE_ID"
+        def request = HttpRequest.GET "$apiV1Root/accounts/$notExistResourceId"
 
         when:
         client.toBlocking().exchange request
@@ -50,13 +50,13 @@ class AccountControllerISpec extends Specification implements ITestSupport {
         then:
         def ex = thrown HttpClientResponseException
         ex.status == HttpStatus.NOT_FOUND
-        ex.message == "Account not exists for id: $NOT_EXIST_RESOURCE_ID"
+        ex.message == "Account not exists for id: $notExistResourceId"
     }
 
     @Test
     def 'should return response with error message and Bad Request code when trying to get account with incorrect id format'() {
         given:
-        def request = HttpRequest.GET "$API_V1_ROOT/accounts/$WRONG_FORMAT_RESOURCE_ID"
+        def request = HttpRequest.GET "$apiV1Root/accounts/$wrongFormatResourceId"
 
         when:
         client.toBlocking().exchange request
@@ -64,7 +64,7 @@ class AccountControllerISpec extends Specification implements ITestSupport {
         then:
         def ex = thrown HttpClientResponseException
         ex.status == HttpStatus.BAD_REQUEST
-        ex.message.contains "Invalid UUID string: $WRONG_FORMAT_RESOURCE_ID"
+        ex.message.contains "Invalid UUID string: $wrongFormatResourceId"
     }
 
     @Test
@@ -106,7 +106,7 @@ class AccountControllerISpec extends Specification implements ITestSupport {
 
         then:
         response.status == HttpStatus.CREATED
-        response.header('Location') == "$API_V1_ROOT/accounts/$responseBody.id"
+        response.header('Location') == "$apiV1Root/accounts/$responseBody.id"
         responseBody.balance == initialBalance
     }
 
@@ -134,7 +134,7 @@ class AccountControllerISpec extends Specification implements ITestSupport {
     @Test
     def 'should return response with not empty collection and OK code when accounts exists'() {
         given:
-        def request = HttpRequest.GET "$API_V1_ROOT/accounts"
+        def request = HttpRequest.GET "$apiV1Root/accounts"
         and:
         createAccount 100
 
@@ -147,7 +147,7 @@ class AccountControllerISpec extends Specification implements ITestSupport {
     }
 
     def createAccount(initialBalance) {
-        def request = HttpRequest.POST "$API_V1_ROOT/accounts", [initialBalance: initialBalance] as CommandCreateAccount
+        def request = HttpRequest.POST "$apiV1Root/accounts", [initialBalance: initialBalance] as CommandCreateAccount
 
         client.toBlocking().exchange request, AccountData
     }

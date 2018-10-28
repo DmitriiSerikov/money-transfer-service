@@ -33,7 +33,7 @@ class TransactionControllerISpec extends Specification implements ITestSupport {
     def secondAccountId
 
     def setup() {
-        def request = HttpRequest.POST "$API_V1_ROOT/accounts", [initialBalance: 100] as CommandCreateAccount
+        def request = HttpRequest.POST "$apiV1Root/accounts", [initialBalance: 100] as CommandCreateAccount
 
         firstAccountId = client.toBlocking().exchange request, AccountData body().id
         secondAccountId = client.toBlocking().exchange request, AccountData body().id
@@ -42,7 +42,7 @@ class TransactionControllerISpec extends Specification implements ITestSupport {
     @Test
     def 'should return response with empty collection and OK code when transactions are not exists yet'() {
         given:
-        def request = HttpRequest.GET "$API_V1_ROOT/transactions"
+        def request = HttpRequest.GET "$apiV1Root/transactions"
 
         when:
         def response = client.toBlocking().exchange request, Collection
@@ -55,7 +55,7 @@ class TransactionControllerISpec extends Specification implements ITestSupport {
     @Test
     def 'should return response with error message and Not Found code when transaction with specified id does not exist'() {
         given:
-        def request = HttpRequest.GET "$API_V1_ROOT/transactions/$NOT_EXIST_RESOURCE_ID"
+        def request = HttpRequest.GET "$apiV1Root/transactions/$notExistResourceId"
 
         when:
         client.toBlocking().exchange request
@@ -63,13 +63,13 @@ class TransactionControllerISpec extends Specification implements ITestSupport {
         then:
         def ex = thrown HttpClientResponseException
         ex.status == HttpStatus.NOT_FOUND
-        ex.message == "Transaction not exists for id: $NOT_EXIST_RESOURCE_ID"
+        ex.message == "Transaction not exists for id: $notExistResourceId"
     }
 
     @Test
     def 'should return response with error message and Bad Request code when trying to get transaction with incorrect id format'() {
         given:
-        def request = HttpRequest.GET "$API_V1_ROOT/transactions/$WRONG_FORMAT_RESOURCE_ID"
+        def request = HttpRequest.GET "$apiV1Root/transactions/$wrongFormatResourceId"
 
         when:
         client.toBlocking().exchange request
@@ -77,7 +77,7 @@ class TransactionControllerISpec extends Specification implements ITestSupport {
         then:
         def ex = thrown HttpClientResponseException
         ex.status == HttpStatus.BAD_REQUEST
-        ex.message.contains "Invalid UUID string: $WRONG_FORMAT_RESOURCE_ID"
+        ex.message.contains "Invalid UUID string: $wrongFormatResourceId"
     }
 
     @Test
@@ -86,7 +86,7 @@ class TransactionControllerISpec extends Specification implements ITestSupport {
         def amount = 100
         def transactionId = createTransaction(firstAccountId, secondAccountId, amount).body().id
         and:
-        def request = HttpRequest.GET "$API_V1_ROOT/transactions/$transactionId"
+        def request = HttpRequest.GET "$apiV1Root/transactions/$transactionId"
 
         when:
         def response = client.toBlocking().exchange request, TransactionData
@@ -104,7 +104,7 @@ class TransactionControllerISpec extends Specification implements ITestSupport {
     @Test
     def 'should return response with not empty collection and OK code when transactions exists'() {
         given:
-        def request = HttpRequest.GET "$API_V1_ROOT/transactions"
+        def request = HttpRequest.GET "$apiV1Root/transactions"
         and:
         createTransaction()
 
@@ -119,7 +119,7 @@ class TransactionControllerISpec extends Specification implements ITestSupport {
     def createTransaction(sourceAccountId = firstAccountId, targetAccountId = secondAccountId, amount = 10) {
         def command = [sourceAccountId: sourceAccountId, referenceId: referenceId,
                        targetAccountId: targetAccountId, amount: amount] as CommandPerformTransfer
-        def request = HttpRequest.POST "$API_V1_ROOT/transfers", command
+        def request = HttpRequest.POST "$apiV1Root/transfers", command
 
         client.toBlocking().exchange request, ExecutionResultData
     }
