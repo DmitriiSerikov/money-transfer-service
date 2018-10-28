@@ -3,6 +3,7 @@ package com.github.example.service;
 import com.github.example.dto.request.CommandPerformTransfer;
 import com.github.example.exception.EntityNotFoundException;
 import com.github.example.model.Transaction;
+import io.micronaut.http.server.exceptions.InternalServerException;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -34,9 +35,8 @@ public interface TransactionService {
      *
      * @param command dto with attributes for transaction creation
      * @return the transaction with actual status of execution
-     * @throws IllegalArgumentException if one of transaction participants
-     *                                  is not found by the unique identifier,
-     *                                  transaction between accounts with same identifier,
+     * @throws InternalServerException  if transaction was stored, but not found during execution
+     * @throws IllegalArgumentException if transfer to the account with same identifier as source,
      *                                  amount for transaction is {@code null} or less than zero
      */
     Transaction transferBy(CommandPerformTransfer command);

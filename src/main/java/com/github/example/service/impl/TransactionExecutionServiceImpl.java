@@ -46,15 +46,15 @@ public class TransactionExecutionServiceImpl implements TransactionExecutionServ
             LOGGER.info("Found {} pending transactions for execution, limit for bulk operation is {}", pendingTransactions.size(), limit);
             getTxGroupedBySourceAccount(pendingTransactions).entrySet()
                     .parallelStream()
-                    .forEach(entry -> executeWithOrdering(entry.getKey(), entry.getValue()));
+                    .forEach(entry -> executeTransactionsWithOrdering(entry.getKey(), entry.getValue()));
         }
     }
 
     @Override
-    public void execute(final UUID transactionId) {
+    public Transaction executeBy(final UUID transactionId) {
         Assert.notNull(transactionId, "Transaction identifier");
 
-        LOGGER.debug("Start execution of transaction with id:{} at {}", transactionId, Instant.now());
+        LOGGER.debug("Start execution of transaction with id: {} at {}", transactionId, Instant.now());
         transactionDao.lockBy(transactionId);
 
         try {
@@ -67,26 +67,33 @@ public class TransactionExecutionServiceImpl implements TransactionExecutionServ
 
             try {
                 executeOperationsWithOrdering(sourceAccountId, targetAccountId, accountDao::lockBy);
-                LOGGER.debug("Accounts with source id:{} and target id:{} locked during execution of transaction with id:{}", sourceAccountId, targetAccountId, transactionId);
+                LOGGER.debug("Accounts with source id: {} and target id: {} locked during execution of transaction with id: {}", sourceAccountId, targetAccountId, transactionId);
 
                 final Account sourceAccount = accountDao.getBy(sourceAccountId);
                 final Account targetAccount = accountDao.getBy(targetAccountId);
 
                 accountDao.update(sourceAccount.withdraw(amount));
                 accountDao.update(targetAccount.deposit(amount));
-                transactionDao.update(transaction.executed());
+                return transactionDao.update(transaction.executed());
             } catch (CouldNotAcquireLockException ex) {
-                LOGGER.debug("Execution of the transaction with id:{} will be delayed due to the lock on one of the accounts", transactionId, ex);
+                LOGGER.debug("Execution of the transaction with id: {} will be delayed cause failed to lock on one of the accounts", transactionId, ex);
+                return transaction;
             } catch (Exception ex) {
-                LOGGER.error("Failed to execute transaction with id:{} between accounts with source id:{} and target id:{}", transactionId, sourceAccountId, targetAccountId, ex);
-                transactionDao.update(transaction.failed(ex.getMessage()));
+                LOGGER.info("Transaction with id: {} executed with failure", transactionId, ex);
+                return transactionDao.update(transaction.failed(ex.getMessage()));
             } finally {
                 executeOperationsWithOrdering(sourceAccountId, targetAccountId, accountDao::unlockBy);
             }
         } finally {
             transactionDao.unlockBy(transactionId);
+            LOGGER.debug("Finished execution of transaction with id: {} at {}", transactionId, Instant.now());
         }
-        LOGGER.debug("Finished execution of transaction with id:{} at {}", transactionId, Instant.now());
+    }
+
+    private void checkTransactionStatus(final Transaction transaction) {
+        if (!PENDING.equals(transaction.getStatus())) {
+            throw new IllegalStateException("Transaction is already performed with id: " + transaction.getId());
+        }
     }
 
     private Map<UUID, List<Transaction>> getTxGroupedBySourceAccount(final Collection<Transaction> transactions) {
@@ -94,25 +101,11 @@ public class TransactionExecutionServiceImpl implements TransactionExecutionServ
                 .collect(groupingBy(Transaction::getSourceAccountId));
     }
 
-    private void executeWithOrdering(final UUID sourceAccountId, final List<Transaction> transactions) {
-        LOGGER.debug("Start execution of {} transactions with source account id:{}", transactions.size(), sourceAccountId);
+    private void executeTransactionsWithOrdering(final UUID sourceAccountId, final List<Transaction> transactions) {
+        LOGGER.debug("Start execution of {} transactions with source account id: {}", transactions.size(), sourceAccountId);
         transactions.stream()
                 .map(Transaction::getId)
-                .forEach(this::executePendingTransaction);
-    }
-
-    private void executePendingTransaction(final UUID transactionId) {
-        try {
-            execute(transactionId);
-        } catch (CouldNotAcquireLockException | EntityNotFoundException | IllegalStateException ex) {
-            LOGGER.error("Execution of transaction with id:{} failed", transactionId, ex);
-        }
-    }
-
-    private void checkTransactionStatus(final Transaction transaction) {
-        if (!PENDING.equals(transaction.getStatus())) {
-            throw new IllegalStateException("Transaction is already performed with id:" + transaction.getId());
-        }
+                .forEach(this::executeWithoutInterruption);
     }
 
     private void executeOperationsWithOrdering(final UUID sourceAccountId, final UUID targetAccountId, final Consumer<UUID> operation) {
@@ -129,5 +122,13 @@ public class TransactionExecutionServiceImpl implements TransactionExecutionServ
 
         operation.accept(firstLock);
         operation.accept(secondLock);
+    }
+
+    private void executeWithoutInterruption(final UUID transactionId) {
+        try {
+            executeBy(transactionId);
+        } catch (CouldNotAcquireLockException | EntityNotFoundException | IllegalStateException ex) {
+            LOGGER.error("Execution of transaction with id: {} aborted", transactionId, ex);
+        }
     }
 }
