@@ -13,8 +13,10 @@ public class TransactionData implements Serializable {
     private UUID targetAccountId;
     private BigDecimal amount;
     private String status;
+    private String reasonCode;
     private Instant createdAt;
     private Instant updatedAt;
+    private Instant completedAt;
 
     public UUID getId() {
         return id;
@@ -56,6 +58,14 @@ public class TransactionData implements Serializable {
         this.status = status;
     }
 
+    public String getReasonCode() {
+        return reasonCode;
+    }
+
+    public void setReasonCode(String reasonCode) {
+        this.reasonCode = reasonCode;
+    }
+
     public Instant getCreatedAt() {
         return createdAt;
     }
@@ -70,5 +80,13 @@ public class TransactionData implements Serializable {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Instant getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(Instant completedAt) {
+        this.completedAt = completedAt;
     }
 }
