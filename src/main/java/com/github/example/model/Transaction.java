@@ -25,6 +25,7 @@ public final class Transaction {
     private final TransactionStatus status;
     private final Instant createdAt;
     private final Instant updatedAt;
+    private final Instant completedAt;
     private final String reasonCode;
 
     public Transaction(final String referenceId, final UUID sourceAccountId, final UUID targetAccountId, final BigDecimal amount) {
@@ -37,6 +38,7 @@ public final class Transaction {
         this.id = UUID.randomUUID();
         this.createdAt = currentInstant;
         this.updatedAt = currentInstant;
+        this.completedAt = null;
         this.reasonCode = null;
         this.status = TransactionStatus.PENDING;
         this.referenceId = referenceId;
@@ -46,9 +48,11 @@ public final class Transaction {
     }
 
     private Transaction(final Transaction transaction, final TransactionStatus changedStatus, final String reasonCode) {
+        Instant currentInstant = Instant.now();
         this.id = transaction.id;
         this.createdAt = transaction.createdAt;
-        this.updatedAt = Instant.now();
+        this.updatedAt = currentInstant;
+        this.completedAt = currentInstant;
         this.status = changedStatus;
         this.reasonCode = reasonCode;
         this.referenceId = transaction.referenceId;
@@ -61,8 +65,8 @@ public final class Transaction {
         return id;
     }
 
-    public Instant getCreatedAt() {
-        return createdAt;
+    public String getReferenceId() {
+        return referenceId;
     }
 
     public UUID getSourceAccountId() {
@@ -81,16 +85,20 @@ public final class Transaction {
         return status;
     }
 
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
     public Instant getUpdatedAt() {
         return updatedAt;
     }
 
-    public String getReasonCode() {
-        return reasonCode;
+    public Instant getCompletedAt() {
+        return completedAt;
     }
 
-    public String getReferenceId() {
-        return referenceId;
+    public String getReasonCode() {
+        return reasonCode;
     }
 
     public Transaction executed() {
