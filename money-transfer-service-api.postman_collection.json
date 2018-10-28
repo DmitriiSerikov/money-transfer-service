@@ -41,7 +41,7 @@
               "raw": ""
             },
             "url": {
-              "raw": "{{url}}/api/{{api_version}}/accounts/4163fec7-e48c-4227-8f6b-d47a4d2523cf",
+              "raw": "{{url}}/api/{{api_version}}/accounts/3f87e3f1-ca7c-4d34-bbff-c6b810aa2fcc",
               "host": [
                 "{{url}}"
               ],
@@ -49,7 +49,7 @@
                 "api",
                 "{{api_version}}",
                 "accounts",
-                "4163fec7-e48c-4227-8f6b-d47a4d2523cf"
+                "3f87e3f1-ca7c-4d34-bbff-c6b810aa2fcc"
               ]
             }
           },
@@ -89,7 +89,7 @@
       "name": "Transactions",
       "item": [
         {
-          "name": "Get all transcations",
+          "name": "Get Transactions",
           "request": {
             "method": "GET",
             "header": [],
@@ -112,7 +112,7 @@
           "response": []
         },
         {
-          "name": "Get transcation by unique identificator",
+          "name": "Get Transaction",
           "request": {
             "method": "GET",
             "header": [],
@@ -121,7 +121,7 @@
               "raw": ""
             },
             "url": {
-              "raw": "{{url}}/api/{{api_version}}/transactions/126a72e1-f6f4-4de5-88cd-22c9520c8263",
+              "raw": "{{url}}/api/{{api_version}}/transactions/f342bc6e-3550-4a15-8c03-7046b45c50af",
               "host": [
                 "{{url}}"
               ],
@@ -129,7 +129,7 @@
                 "api",
                 "{{api_version}}",
                 "transactions",
-                "126a72e1-f6f4-4de5-88cd-22c9520c8263"
+                "f342bc6e-3550-4a15-8c03-7046b45c50af"
               ]
             }
           },
@@ -149,7 +149,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n\t\"referenceId\": \"e0cbf84637264ee082a848a\",\n\t\"sourceAccountId\": \"4163fec7-e48c-4227-8f6b-d47a4d2523cf\",\n\t\"targetAccountId\": \"09f67d36-b137-419d-a351-f836c246a357\",\n\t\"amount\": 10\n}"
+          "raw": "{\n\t\"referenceId\": \"e0cbf84637264ee082a848c\",\n\t\"sourceAccountId\": \"3f87e3f1-ca7c-4d34-bbff-c6b810aa2fcc\",\n\t\"targetAccountId\": \"4000f4de-dee4-4ec4-863b-08deb5b48371\",\n\t\"amount\": 30\n}"
         },
         "url": {
           "raw": "{{url}}/api/{{api_version}}/transfers",
