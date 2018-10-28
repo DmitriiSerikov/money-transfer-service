@@ -98,7 +98,6 @@ class TransactionControllerISpec extends Specification implements ITestSupport {
         responseBody.sourceAccountId == firstAccountId
         responseBody.targetAccountId == secondAccountId
         responseBody.amount == amount
-        responseBody.createdAt == responseBody.updatedAt
     }
 
     @Test
