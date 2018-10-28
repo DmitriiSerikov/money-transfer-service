@@ -14,7 +14,7 @@ class ModelMapperFactorySpec extends Specification {
     ModelMapperFactory factory
 
     @Test
-    def "should produce implementation of model mapper when bean creation is required"() {
+    def 'should produce implementation of model mapper when bean creation is required'() {
         when:
         def result = factory.create()
 

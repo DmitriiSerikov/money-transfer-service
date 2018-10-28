@@ -25,24 +25,24 @@ class LockHolderISpec extends Specification {
     def lockHolder = applicationContext.getBean LockHolder
     @Shared
     def executor = Executors.newSingleThreadExecutor()
-    def lockId = "some_lock_id"
+    def lockId = 'some_lock_id'
 
     def setup() {
         executor.submit({ lockHolder.acquire(lockId) }).get()
     }
 
     @Test
-    def "should throw exception when lock is acquired by another thread and the waiting time elapsed before the lock could be acquired"() {
+    def 'should throw exception when lock is acquired by another thread and the waiting time elapsed before the lock could be acquired'() {
         when:
         lockHolder.acquire lockId
 
         then:
         def ex = thrown CouldNotAcquireLockException
-        ex.message == "Couldn't acquire lock for key:" + lockId
+        ex.message == "Couldn't acquire lock for key:$lockId"
     }
 
     @Test
-    def "should throw exception when lock is acquired by another thread and the current thread is interrupted by another thread"() {
+    def 'should throw exception when lock is acquired by another thread and the current thread is interrupted by another thread'() {
         given:
         def currentThread = currentThread()
         executor.execute({
@@ -55,11 +55,11 @@ class LockHolderISpec extends Specification {
 
         then:
         def ex = thrown CouldNotAcquireLockException
-        ex.message == "Lock not acquired due to interruption of thread, id:" + lockId
+        ex.message == "Lock not acquired due to interruption of thread, id:$lockId"
     }
 
     @Test
-    def "should not throw exception when try release lock that is not acquired by current thread previously"() {
+    def 'should not throw exception when try release lock that is not acquired by current thread previously'() {
         when:
         lockHolder.release lockId
 

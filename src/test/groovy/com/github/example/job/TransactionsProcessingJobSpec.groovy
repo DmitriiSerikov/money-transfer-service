@@ -24,7 +24,7 @@ class TransactionsProcessingJobSpec extends Specification {
     }
 
     @Test
-    def "should start processing of pending transaction with specified limit when job is enabled and triggered by scheduler"() {
+    def 'should start processing of pending transaction with specified limit when job is enabled and triggered by scheduler'() {
         given:
         transactionsProcessingJob.setEnabled true
 
@@ -36,7 +36,7 @@ class TransactionsProcessingJobSpec extends Specification {
     }
 
     @Test
-    def "should not start processing of pending transaction when job is disabled"() {
+    def 'should not start processing of pending transaction when job is disabled'() {
         given:
         transactionsProcessingJob.setEnabled false
 

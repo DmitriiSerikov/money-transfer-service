@@ -12,10 +12,10 @@ class LockHolderSpec extends Specification {
     @Subject
     LockHolderImpl lockHolder
 
-    def lockId = "some_lock_id"
+    def lockId = 'some_lock_id'
 
     @Test
-    def "should throw exception when try acquire lock by null instead of id"() {
+    def 'should throw exception when try acquire lock by null instead of id'() {
         when:
         lockHolder.acquire null
 
@@ -24,7 +24,7 @@ class LockHolderSpec extends Specification {
     }
 
     @Test
-    def "should not throw exception when acquire lock that doesn't acquired before by any thread"() {
+    def 'should not throw exception when acquire lock that does not acquired before by any thread'() {
         when:
         lockHolder.acquire lockId
 
@@ -33,7 +33,7 @@ class LockHolderSpec extends Specification {
     }
 
     @Test
-    def "should not throw exception when try acquire already acquired lock second time"() {
+    def 'should not throw exception when try acquire already acquired lock second time'() {
         given:
         lockHolder.acquire lockId
 
@@ -45,7 +45,7 @@ class LockHolderSpec extends Specification {
     }
 
     @Test
-    def "should throw exception when try release lock by null instead of id"() {
+    def 'should throw exception when try release lock by null instead of id'() {
         when:
         lockHolder.release null
 
@@ -54,7 +54,7 @@ class LockHolderSpec extends Specification {
     }
 
     @Test
-    def "should not throw exception when try release lock that doesn't exist"() {
+    def 'should not throw exception when try release lock that does not exist'() {
         when:
         lockHolder.release lockId
 
@@ -63,7 +63,7 @@ class LockHolderSpec extends Specification {
     }
 
     @Test
-    def "should not throw exception when release lock that doesn't hold by any thread and neither one thread are waiting to acquire this lock"() {
+    def 'should not throw exception when release lock that does not hold by any thread and neither one thread are waiting to acquire this lock'() {
         given:
         lockHolder.acquire lockId
 

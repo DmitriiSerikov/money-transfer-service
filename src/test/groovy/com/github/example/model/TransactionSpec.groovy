@@ -1,5 +1,6 @@
 package com.github.example.model
 
+import com.github.example.TestSupport
 import com.github.example.UnitTest
 import org.junit.Test
 import org.junit.experimental.categories.Category
@@ -8,37 +9,33 @@ import spock.lang.Specification
 import static com.github.example.model.Transaction.TransactionStatus.*
 
 @Category(UnitTest)
-class TransactionSpec extends Specification {
-
-    def referenceId = "ref"
-    def firstAccountId = UUID.fromString "0-0-0-0-1"
-    def secondAccountId = UUID.fromString "0-0-0-0-2"
+class TransactionSpec extends Specification implements TestSupport {
 
     @Test
-    def "should throw exception when trying initialize transaction with null or blank string instead of reference id"() {
+    def 'should throw exception when trying initialize transaction with null or blank string instead of reference id'() {
         when:
         new Transaction(refId, firstAccountId, secondAccountId, BigDecimal.ONE)
 
         then:
         def ex = thrown IllegalArgumentException
-        ex.message == "Reference identifier should be not blank string"
+        ex.message == 'Reference identifier should be not blank string'
 
         where:
-        refId << [null, ""]
+        refId << [null, '', ' ']
     }
 
     @Test
-    def "should throw exception when trying initialize transaction with null amount"() {
+    def 'should throw exception when trying initialize transaction with null amount'() {
         when:
         new Transaction(referenceId, firstAccountId, secondAccountId, null)
 
         then:
         def ex = thrown IllegalArgumentException
-        ex.message == "Transaction amount cannot be null"
+        ex.message == 'Transaction amount cannot be null'
     }
 
     @Test
-    def "should throw exception when trying initialize transaction with negative amount"() {
+    def 'should throw exception when trying initialize transaction with negative amount'() {
         given:
         def negativeAmount = new BigDecimal(-10)
 
@@ -47,31 +44,31 @@ class TransactionSpec extends Specification {
 
         then:
         def ex = thrown IllegalArgumentException
-        ex.message == "Transaction amount should be positive"
+        ex.message == 'Transaction amount should be positive'
     }
 
     @Test
-    def "should throw exception when trying initialize transaction with zero amount"() {
+    def 'should throw exception when trying initialize transaction with zero amount'() {
         when:
         new Transaction(referenceId, firstAccountId, secondAccountId, BigDecimal.ZERO)
 
         then:
         def ex = thrown IllegalArgumentException
-        ex.message == "Transaction amount should be positive"
+        ex.message == 'Transaction amount should be positive'
     }
 
     @Test
-    def "should throw exception when trying initialize transaction between same account id's"() {
+    def 'should throw exception when trying initialize transaction between same account ids'() {
         when:
         new Transaction(referenceId, firstAccountId, firstAccountId, BigDecimal.ONE)
 
         then:
         def ex = thrown IllegalArgumentException
-        ex.message == "Transactions to the same account is not allowed"
+        ex.message == 'Transactions to the same account is not allowed'
     }
 
     @Test
-    def "should initialize transaction properties when reference id, amount and account id's are correct"() {
+    def 'should initialize transaction properties when reference id, amount and account ids are correct'() {
         given:
         def amount = BigDecimal.ONE
 
@@ -81,6 +78,7 @@ class TransactionSpec extends Specification {
         then:
         result.id
         !result.reasonCode
+        !result.completedAt
         result.amount == amount
         result.status == PENDING
         result.referenceId == referenceId
@@ -90,7 +88,7 @@ class TransactionSpec extends Specification {
     }
 
     @Test
-    def "should keep transaction immutable by returning new instance with copied and updated properties when transaction is executed"() {
+    def 'should keep transaction immutable by returning new instance with copied and updated properties when transaction is executed'() {
         given:
         def initialTransaction = new Transaction(referenceId, firstAccountId, secondAccountId, BigDecimal.ONE)
 
@@ -105,14 +103,15 @@ class TransactionSpec extends Specification {
         result.sourceAccountId == initialTransaction.sourceAccountId
         result.targetAccountId == initialTransaction.targetAccountId
         result.createdAt == initialTransaction.createdAt
+        result.updatedAt == result.completedAt
         result.reasonCode == initialTransaction.reasonCode
         result.status == SUCCESS
     }
 
     @Test
-    def "should keep transaction immutable by returning new instance with copied and updated properties when transaction is failed"() {
+    def 'should keep transaction immutable by returning new instance with copied and updated properties when transaction is failed'() {
         given:
-        def reasonOfFail = "Some reason"
+        def reasonOfFail = 'Some reason'
         def initialTransaction = new Transaction(referenceId, firstAccountId, secondAccountId, BigDecimal.ONE)
 
         when:
@@ -126,6 +125,7 @@ class TransactionSpec extends Specification {
         result.sourceAccountId == initialTransaction.sourceAccountId
         result.targetAccountId == initialTransaction.targetAccountId
         result.createdAt == initialTransaction.createdAt
+        result.updatedAt == result.completedAt
         result.reasonCode == reasonOfFail
         result.status == FAILED
     }

@@ -58,25 +58,17 @@ class TransferControllerISpec extends Specification implements ITestSupport {
     }
 
     @Test
-    def 'should return response with error message and Bad Request code when trying to perform transfer with null reference id'() {
+    def 'should return response with error message and Bad Request code when trying to perform transfer with invalid reference id'() {
         when:
-        performTransfer referenceId: null
+        performTransfer referenceId: incorrectReferenceId
 
         then:
         def ex = thrown HttpClientResponseException
         ex.status == HttpStatus.BAD_REQUEST
         ex.message == 'Reference identifier should be not blank string'
-    }
 
-    @Test
-    def 'should return response with error message and Bad Request code when trying to perform transfer with empty reference id'() {
-        when:
-        performTransfer referenceId: ''
-
-        then:
-        def ex = thrown HttpClientResponseException
-        ex.status == HttpStatus.BAD_REQUEST
-        ex.message == 'Reference identifier should be not blank string'
+        where:
+        incorrectReferenceId << [null, '', ' ']
     }
 
     @Test

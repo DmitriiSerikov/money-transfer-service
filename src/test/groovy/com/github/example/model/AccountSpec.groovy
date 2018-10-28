@@ -9,17 +9,17 @@ import spock.lang.Specification
 class AccountSpec extends Specification {
 
     @Test
-    def "should throw exception when trying initialize account with null balance"() {
+    def 'should throw exception when trying initialize account with null balance'() {
         when:
         new Account(null)
 
         then:
         def ex = thrown IllegalArgumentException
-        ex.message == "Initial balance cannot be null"
+        ex.message == 'Initial balance cannot be null'
     }
 
     @Test
-    def "should throw exception when trying initialize account with negative balance"() {
+    def 'should throw exception when trying initialize account with negative balance'() {
         given:
         def negativeBalance = new BigDecimal(-10)
 
@@ -28,11 +28,11 @@ class AccountSpec extends Specification {
 
         then:
         def ex = thrown IllegalArgumentException
-        ex.message == "Account balance should be positive or zero"
+        ex.message == 'Account balance should be positive or zero'
     }
 
     @Test
-    def "should throw exception when balance is negative after deposit to account"() {
+    def 'should throw exception when balance is negative after deposit to account'() {
         given:
         def account = new Account(BigDecimal.ZERO)
         def negativeAmount = new BigDecimal(-10)
@@ -42,11 +42,11 @@ class AccountSpec extends Specification {
 
         then:
         def ex = thrown IllegalArgumentException
-        ex.message == "Account balance should be positive or zero"
+        ex.message == 'Account balance should be positive or zero'
     }
 
     @Test
-    def "should throw exception when balance is negative after withdrawal from account"() {
+    def 'should throw exception when balance is negative after withdrawal from account'() {
         given:
         def account = new Account(BigDecimal.ZERO)
         def amount = BigDecimal.TEN
@@ -56,11 +56,11 @@ class AccountSpec extends Specification {
 
         then:
         def ex = thrown IllegalArgumentException
-        ex.message == "Account balance should be positive or zero"
+        ex.message == 'Account balance should be positive or zero'
     }
 
     @Test
-    def "should initialize account properties when initial balance is positive"() {
+    def 'should initialize account properties when initial balance is positive'() {
         given:
         def initialBalance = BigDecimal.ZERO
 
@@ -74,7 +74,7 @@ class AccountSpec extends Specification {
     }
 
     @Test
-    def "should keep account immutable by returning new instance with copied and updated properties when deposit to account"() {
+    def 'should keep account immutable by returning new instance with copied and updated properties when deposit to account'() {
         given:
         def initialAccount = new Account(BigDecimal.ZERO)
         def amount = BigDecimal.TEN

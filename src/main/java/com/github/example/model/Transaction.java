@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
-import static io.netty.util.internal.StringUtil.isNullOrEmpty;
+import static io.micronaut.core.util.StringUtils.hasText;
 
 /**
  * The {@code Transaction} class represents money transfer in financial domain.
@@ -30,7 +30,7 @@ public final class Transaction {
 
     public Transaction(final String referenceId, final UUID sourceAccountId, final UUID targetAccountId, final BigDecimal amount) {
         Assert.notNull(amount, "Transaction amount");
-        Assert.isTrue(!isNullOrEmpty(referenceId), "Reference identifier should be not blank string");
+        Assert.isTrue(hasText(referenceId), "Reference identifier should be not blank string");
         Assert.isTrue(amount.compareTo(BigDecimal.ZERO) > 0, "Transaction amount should be positive");
         Assert.isTrue(!sourceAccountId.equals(targetAccountId), "Transactions to the same account is not allowed");
 
