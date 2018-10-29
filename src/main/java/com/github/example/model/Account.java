@@ -7,13 +7,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
-/**
- * The {@code Account} class represents bank account in financial domain.
- * <p>
- * Accounts are immutable in particular implementation
- * <p>
- * The class {@code Account} includes methods for deposit and withdraw money from account balance.
- */
 public final class Account {
 
     private final UUID id;
@@ -22,7 +15,6 @@ public final class Account {
     private final Instant updatedAt;
 
     public Account(final BigDecimal initialBalance) {
-        Assert.notNull(initialBalance, "Initial balance");
         checkBalanceIsPositive(initialBalance);
 
         Instant currentInstant = Instant.now();
@@ -57,15 +49,14 @@ public final class Account {
         return updatedAt;
     }
 
-    public Account deposit(final BigDecimal amount) {
-        return new Account(this, balance.add(amount));
+    public Account addBy(final TransactionEntry entry) {
+        Assert.notNull(entry, "Transaction entry");
+
+        return new Account(this, balance.add(entry.getAmount()));
     }
 
-    public Account withdraw(final BigDecimal amount) {
-        return new Account(this, balance.subtract(amount));
-    }
-
-    private void checkBalanceIsPositive(final BigDecimal balance) {
-        Assert.isTrue(balance.compareTo(BigDecimal.ZERO) >= 0, "Account balance should be positive or zero");
+    private static void checkBalanceIsPositive(final BigDecimal balance) {
+        Assert.notNull(balance, "Account balance");
+        Assert.isTrue(balance.signum() >= 0, "Account balance should be positive or zero");
     }
 }

@@ -1,22 +1,21 @@
 package com.github.example.dto.response;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Set;
 import java.util.UUID;
 
 public class TransactionData implements Serializable {
     private static final long serialVersionUID = -1598024062752939479L;
 
     private UUID id;
-    private UUID sourceAccountId;
-    private UUID targetAccountId;
-    private BigDecimal amount;
+    private String referenceId;
     private String status;
-    private String reasonCode;
     private Instant createdAt;
     private Instant updatedAt;
     private Instant completedAt;
+    private String reasonCode;
+    private Set<TransactionEntryData> entries;
 
     public UUID getId() {
         return id;
@@ -26,28 +25,12 @@ public class TransactionData implements Serializable {
         this.id = id;
     }
 
-    public UUID getSourceAccountId() {
-        return sourceAccountId;
+    public String getReferenceId() {
+        return referenceId;
     }
 
-    public void setSourceAccountId(UUID sourceAccountId) {
-        this.sourceAccountId = sourceAccountId;
-    }
-
-    public UUID getTargetAccountId() {
-        return targetAccountId;
-    }
-
-    public void setTargetAccountId(UUID targetAccountId) {
-        this.targetAccountId = targetAccountId;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
+    public void setReferenceId(String referenceId) {
+        this.referenceId = referenceId;
     }
 
     public String getStatus() {
@@ -56,14 +39,6 @@ public class TransactionData implements Serializable {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public String getReasonCode() {
-        return reasonCode;
-    }
-
-    public void setReasonCode(String reasonCode) {
-        this.reasonCode = reasonCode;
     }
 
     public Instant getCreatedAt() {
@@ -88,5 +63,21 @@ public class TransactionData implements Serializable {
 
     public void setCompletedAt(Instant completedAt) {
         this.completedAt = completedAt;
+    }
+
+    public String getReasonCode() {
+        return reasonCode;
+    }
+
+    public void setReasonCode(String reasonCode) {
+        this.reasonCode = reasonCode;
+    }
+
+    public Set<TransactionEntryData> getEntries() {
+        return entries;
+    }
+
+    public void setEntries(Set<TransactionEntryData> entries) {
+        this.entries = entries;
     }
 }

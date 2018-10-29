@@ -2,37 +2,29 @@ package com.github.example.model;
 
 import org.modelmapper.internal.util.Assert;
 
-import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Set;
 import java.util.UUID;
 
+import static io.micronaut.core.util.CollectionUtils.isNotEmpty;
 import static io.micronaut.core.util.StringUtils.hasText;
+import static java.util.Collections.unmodifiableSet;
 
-/**
- * The {@code Transaction} class represents money transfer in financial domain.
- * <p>
- * Transaction are immutable in particular implementation.
- * <p>
- * The class {@code Transaction} includes methods for changing status of transaction according to {@link TransactionStatus} values.
- */
 public final class Transaction {
 
     private final UUID id;
     private final String referenceId;
-    private final UUID sourceAccountId;
-    private final UUID targetAccountId;
-    private final BigDecimal amount;
     private final TransactionStatus status;
     private final Instant createdAt;
     private final Instant updatedAt;
     private final Instant completedAt;
     private final String reasonCode;
+    private final Set<TransactionEntry> entries;
 
-    public Transaction(final String referenceId, final UUID sourceAccountId, final UUID targetAccountId, final BigDecimal amount) {
-        Assert.notNull(amount, "Transaction amount");
+    public Transaction(final String referenceId, final Set<TransactionEntry> entries) {
         Assert.isTrue(hasText(referenceId), "Reference identifier should be not blank string");
-        Assert.isTrue(amount.compareTo(BigDecimal.ZERO) > 0, "Transaction amount should be positive");
-        Assert.isTrue(!sourceAccountId.equals(targetAccountId), "Transactions to the same account is not allowed");
+        Assert.isTrue(isNotEmpty(entries), "Transactions entries should not be empty");
+        Assert.isTrue(entries.size() > 1, "Transactions should have at least two entries");
 
         Instant currentInstant = Instant.now();
         this.id = UUID.randomUUID();
@@ -42,9 +34,11 @@ public final class Transaction {
         this.reasonCode = null;
         this.status = TransactionStatus.PENDING;
         this.referenceId = referenceId;
-        this.sourceAccountId = sourceAccountId;
-        this.targetAccountId = targetAccountId;
-        this.amount = amount;
+        this.entries = unmodifiableSet(entries);
+    }
+
+    private Transaction(final Transaction transaction, final TransactionStatus changedStatus) {
+        this(transaction, changedStatus, transaction.reasonCode);
     }
 
     private Transaction(final Transaction transaction, final TransactionStatus changedStatus, final String reasonCode) {
@@ -56,9 +50,7 @@ public final class Transaction {
         this.status = changedStatus;
         this.reasonCode = reasonCode;
         this.referenceId = transaction.referenceId;
-        this.sourceAccountId = transaction.sourceAccountId;
-        this.targetAccountId = transaction.targetAccountId;
-        this.amount = transaction.amount;
+        this.entries = transaction.entries;
     }
 
     public UUID getId() {
@@ -67,18 +59,6 @@ public final class Transaction {
 
     public String getReferenceId() {
         return referenceId;
-    }
-
-    public UUID getSourceAccountId() {
-        return sourceAccountId;
-    }
-
-    public UUID getTargetAccountId() {
-        return targetAccountId;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
     }
 
     public TransactionStatus getStatus() {
@@ -101,8 +81,12 @@ public final class Transaction {
         return reasonCode;
     }
 
+    public Set<TransactionEntry> getEntries() {
+        return entries;
+    }
+
     public Transaction executed() {
-        return new Transaction(this, TransactionStatus.SUCCESS, this.reasonCode);
+        return new Transaction(this, TransactionStatus.SUCCESS);
     }
 
     public Transaction failed(final String reasonCode) {
