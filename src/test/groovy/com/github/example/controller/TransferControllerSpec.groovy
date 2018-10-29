@@ -24,7 +24,7 @@ class TransferControllerSpec extends Specification implements TestSupport {
     @Collaborator
     ModelMapper modelMapper = Mock()
 
-    def transaction = TransactionStub()
+    def transaction = transactionStub()
     def command = new CommandPerformTransfer()
 
     @Test

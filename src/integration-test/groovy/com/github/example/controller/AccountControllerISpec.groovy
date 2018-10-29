@@ -78,7 +78,7 @@ class AccountControllerISpec extends Specification implements ITestSupport {
         then:
         def ex = thrown HttpClientResponseException
         ex.status == HttpStatus.BAD_REQUEST
-        ex.message == 'Initial balance cannot be null'
+        ex.message == 'Account balance cannot be null'
     }
 
     @Test

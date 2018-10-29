@@ -29,7 +29,7 @@ class AccountControllerSpec extends Specification implements TestSupport {
 
     def request = Mock(HttpRequest)
     def command = new CommandCreateAccount()
-    def account = AccountStub()
+    def account = accountStub()
     def accountId = account.id
 
     @Test

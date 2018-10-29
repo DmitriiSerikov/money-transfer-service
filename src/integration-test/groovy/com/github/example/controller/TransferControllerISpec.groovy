@@ -40,8 +40,8 @@ class TransferControllerISpec extends Specification implements ITestSupport {
     def setup() {
         def request = HttpRequest.POST "$apiV1Root/accounts", [initialBalance: initialBalance] as CommandCreateAccount
 
-        firstAccountId = client.toBlocking().exchange request, AccountData body().id
-        secondAccountId = client.toBlocking().exchange request, AccountData body().id
+        firstAccountId = client.toBlocking().exchange(request, AccountData).body().id
+        secondAccountId = client.toBlocking().exchange(request, AccountData).body().id
     }
 
     @Test
@@ -94,7 +94,7 @@ class TransferControllerISpec extends Specification implements ITestSupport {
         then:
         def ex = thrown HttpClientResponseException
         ex.status == HttpStatus.BAD_REQUEST
-        ex.message == 'Transaction amount cannot be null'
+        ex.message == 'Operation amount cannot be null'
     }
 
     @Test
@@ -105,7 +105,7 @@ class TransferControllerISpec extends Specification implements ITestSupport {
         then:
         def ex = thrown HttpClientResponseException
         ex.status == HttpStatus.BAD_REQUEST
-        ex.message == 'Transaction amount should be positive'
+        ex.message == 'Operation amount should be positive'
     }
 
     @Test
@@ -116,7 +116,7 @@ class TransferControllerISpec extends Specification implements ITestSupport {
         then:
         def ex = thrown HttpClientResponseException
         ex.status == HttpStatus.BAD_REQUEST
-        ex.message == 'Transactions to the same account is not allowed'
+        ex.message == 'Money transfer to the same account is not allowed'
     }
 
     @Test

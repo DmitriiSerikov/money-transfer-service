@@ -35,8 +35,8 @@ class TransactionControllerISpec extends Specification implements ITestSupport {
     def setup() {
         def request = HttpRequest.POST "$apiV1Root/accounts", [initialBalance: 100] as CommandCreateAccount
 
-        firstAccountId = client.toBlocking().exchange request, AccountData body().id
-        secondAccountId = client.toBlocking().exchange request, AccountData body().id
+        firstAccountId = client.toBlocking().exchange(request, AccountData).body().id
+        secondAccountId = client.toBlocking().exchange(request, AccountData).body().id
     }
 
     @Test
@@ -83,7 +83,7 @@ class TransactionControllerISpec extends Specification implements ITestSupport {
     @Test
     def 'should return response with transaction data and OK code when transaction with specified id exist'() {
         given:
-        def amount = 100
+        def amount = 100 as BigDecimal
         def transactionId = createTransaction(firstAccountId, secondAccountId, amount).body().id
         and:
         def request = HttpRequest.GET "$apiV1Root/transactions/$transactionId"
@@ -95,9 +95,11 @@ class TransactionControllerISpec extends Specification implements ITestSupport {
         then:
         response.status == HttpStatus.OK
         responseBody.id == transactionId
-        responseBody.sourceAccountId == firstAccountId
-        responseBody.targetAccountId == secondAccountId
-        responseBody.amount == amount
+        responseBody.entries*.accountId.contains firstAccountId
+        responseBody.entries*.accountId.contains secondAccountId
+        responseBody.entries*.amount.contains amount
+        responseBody.entries*.amount.contains amount.negate()
+        responseBody.entries*.amount.sum() == 0 as BigDecimal
     }
 
     @Test

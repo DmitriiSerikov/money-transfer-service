@@ -27,7 +27,7 @@ class TransactionControllerSpec extends Specification implements TestSupport {
     ModelMapper modelMapper = Mock()
 
     def request = Mock(HttpRequest)
-    def transaction = TransactionStub()
+    def transaction = transactionStub()
     def transactionId = transaction.id
 
     @Test
