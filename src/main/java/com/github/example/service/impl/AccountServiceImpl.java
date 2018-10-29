@@ -36,6 +36,7 @@ public class AccountServiceImpl implements AccountService {
         Assert.notNull(command);
 
         final Account account = new Account(command.getInitialBalance());
-        return accountDao.insert(account);
+        accountDao.insert(account);
+        return account;
     }
 }

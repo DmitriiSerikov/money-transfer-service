@@ -2,25 +2,20 @@ package com.github.example.service.impl;
 
 import com.github.example.dao.TransactionDao;
 import com.github.example.dto.request.CommandPerformTransfer;
-import com.github.example.exception.CouldNotAcquireLockException;
-import com.github.example.exception.EntityNotFoundException;
 import com.github.example.model.Transaction;
+import com.github.example.model.TransactionBuilder;
 import com.github.example.service.TransactionExecutionService;
 import com.github.example.service.TransactionService;
-import io.micronaut.http.server.exceptions.InternalServerException;
 import org.modelmapper.internal.util.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.UUID;
 
 @Singleton
 public class TransactionServiceImpl implements TransactionService {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(TransactionServiceImpl.class);
 
     private final TransactionDao transactionDao;
     private final TransactionExecutionService executionService;
@@ -45,25 +40,23 @@ public class TransactionServiceImpl implements TransactionService {
     public Transaction transferBy(final CommandPerformTransfer command) {
         Assert.notNull(command);
 
-        try {
-            final Transaction transaction = new Transaction(command.getReferenceId(),
-                    command.getSourceAccountId(),
-                    command.getTargetAccountId(),
-                    command.getAmount());
+        final UUID sourceAccountId = command.getSourceAccountId();
+        final UUID targetAccountId = command.getTargetAccountId();
+        final BigDecimal amount = command.getAmount();
 
-            transactionDao.insert(transaction);
-            return tryPerformSynchronouslyBy(transaction.getId());
-        } catch (EntityNotFoundException ex) {
-            throw new InternalServerException("Just stored transaction is not found in storage during execution", ex);
+        if (sourceAccountId.equals(targetAccountId)) {
+            throw new IllegalArgumentException("Money transfer to the same account is not allowed");
         }
-    }
 
-    private Transaction tryPerformSynchronouslyBy(final UUID transactionId) {
-        try {
-            return executionService.executeBy(transactionId);
-        } catch (CouldNotAcquireLockException | IllegalStateException ex) {
-            LOGGER.debug("Transaction with id: {} were performed asynchronously, try to obtain it from storage with actual status", transactionId, ex);
-            return getById(transactionId);
-        }
+        final Transaction transaction = TransactionBuilder.builder(command.getReferenceId())
+                .withdraw(sourceAccountId, amount)
+                .deposit(targetAccountId, amount)
+                .build();
+
+        transactionDao.insert(transaction);
+
+        final UUID transactionId = transaction.getId();
+        final boolean isExecuted = executionService.executeBy(transactionId);
+        return isExecuted ? getById(transactionId) : transaction;
     }
 }
