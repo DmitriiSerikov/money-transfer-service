@@ -19,15 +19,6 @@ public interface AccountDao {
     Collection<Account> findAll();
 
     /**
-     * Stores newly created account into the storage.
-     *
-     * @param account the account entity for storing into the storage
-     * @return the account entity persisted into the storage
-     * @throws EntityAlreadyExistsException if account with the unique identifier is already present
-     */
-    Account insert(Account account);
-
-    /**
      * Returns account by the unique identifier of account
      * in case it's already present in the storage.
      *
@@ -38,13 +29,20 @@ public interface AccountDao {
     Account getBy(UUID accountId);
 
     /**
+     * Stores newly created account into the storage.
+     *
+     * @param account the account entity for storing into the storage
+     * @throws EntityAlreadyExistsException if account with the unique identifier is already present
+     */
+    void insert(Account account);
+
+    /**
      * Update account in the storage in case it already present
      * otherwise puts it into the storage.
      *
      * @param account the account entity for storing into the storage
-     * @return the account entity updated in the storage
      */
-    Account update(Account account);
+    void update(Account account);
 
     /**
      * Acquires the lock for account entity by the unique identifier.

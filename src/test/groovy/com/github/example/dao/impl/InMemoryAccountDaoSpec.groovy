@@ -9,10 +9,7 @@ import com.github.example.exception.EntityNotFoundException
 import com.github.example.holder.LockHolder
 import org.junit.Test
 import org.junit.experimental.categories.Category
-import spock.lang.Shared
 import spock.lang.Specification
-
-import static java.math.BigDecimal.ONE
 
 @Category(UnitTest)
 class InMemoryAccountDaoSpec extends Specification implements TestSupport {
@@ -23,8 +20,7 @@ class InMemoryAccountDaoSpec extends Specification implements TestSupport {
     @Collaborator
     LockHolder lockHolder = Mock()
 
-    @Shared
-    def account = AccountStub()
+    def account = accountStub()
 
     @Test
     def 'should throw exception when account for insertion is null'() {
@@ -37,7 +33,7 @@ class InMemoryAccountDaoSpec extends Specification implements TestSupport {
     }
 
     @Test
-    def 'should throw exception when storage already contains account for this id'() {
+    def 'should throw exception when storage already contains account for with same id'() {
         given:
         inMemoryAccountDao.insert account
 
@@ -50,12 +46,12 @@ class InMemoryAccountDaoSpec extends Specification implements TestSupport {
     }
 
     @Test
-    def 'should return same account when it successfully inserted in storage'() {
+    def 'should insert account when storage does not contain account with same id'() {
         when:
-        def result = inMemoryAccountDao.insert account
+        inMemoryAccountDao.insert account
 
         then:
-        result == account
+        notThrown EntityAlreadyExistsException
     }
 
     @Test
@@ -147,7 +143,7 @@ class InMemoryAccountDaoSpec extends Specification implements TestSupport {
     @Test
     def 'should update account when account for update already exists in storage'() {
         given:
-        def updatedAccount = account.withdraw ONE
+        def updatedAccount = account.addBy transactionEntry
         and:
         inMemoryAccountDao.insert account
 

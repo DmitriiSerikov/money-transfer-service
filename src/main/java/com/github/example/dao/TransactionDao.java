@@ -30,15 +30,6 @@ public interface TransactionDao {
     Collection<Transaction> findPending(int limit);
 
     /**
-     * Stores newly created transaction into the storage.
-     *
-     * @param transaction the transaction entity for storing into the storage
-     * @return the transaction entity persisted into the storage
-     * @throws EntityAlreadyExistsException if transaction with the same reference id is already present
-     */
-    Transaction insert(Transaction transaction);
-
-    /**
      * Returns transaction by the unique identifier of transaction
      * in case it's already present in the storage.
      *
@@ -49,13 +40,20 @@ public interface TransactionDao {
     Transaction getBy(UUID transactionId);
 
     /**
+     * Stores newly created transaction into the storage.
+     *
+     * @param transaction the transaction entity for storing into the storage
+     * @throws EntityAlreadyExistsException if transaction with the same reference id is already present
+     */
+    void insert(Transaction transaction);
+
+    /**
      * Update transaction in the storage in case it already present
      * otherwise puts it into the storage.
      *
      * @param transaction the transaction entity for storing into the storage
-     * @return the transaction entity updated in the storage
      */
-    Transaction update(Transaction transaction);
+    void update(Transaction transaction);
 
     /**
      * Acquires the lock for transaction entity by the unique identifier.

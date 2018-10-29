@@ -50,17 +50,16 @@ public class InMemoryTransactionDaoImpl implements TransactionDao {
     }
 
     @Override
-    public Transaction insert(final Transaction transaction) {
+    public void insert(final Transaction transaction) {
         Assert.notNull(transaction, TRANSACTION_PARAM);
 
         final UUID transactionId = transaction.getId();
         final String referenceId = transaction.getReferenceId();
 
-        if (referenceToIdMapping.putIfAbsent(referenceId, transactionId) == null) {
-            storage.put(transactionId, transaction);
-            return transaction;
+        if (referenceToIdMapping.putIfAbsent(referenceId, transactionId) != null) {
+            throw new EntityAlreadyExistsException("Transaction already exists for referenceId:" + referenceId);
         }
-        throw new EntityAlreadyExistsException("Transaction already exists for referenceId:" + referenceId);
+        storage.put(transactionId, transaction);
     }
 
     @Override
@@ -72,17 +71,16 @@ public class InMemoryTransactionDaoImpl implements TransactionDao {
     }
 
     @Override
-    public Transaction update(final Transaction transaction) {
+    public void update(final Transaction transaction) {
         Assert.notNull(transaction, TRANSACTION_PARAM);
 
         final UUID transactionId = transaction.getId();
 
         lockBy(transactionId);
         try {
-            if (storage.replace(transactionId, transaction) != null) {
-                return transaction;
+            if (storage.replace(transactionId, transaction) == null) {
+                throw new EntityNotFoundException("Transaction not exists for id: " + transactionId);
             }
-            throw new EntityNotFoundException("Transaction not exists for id: " + transactionId);
         } finally {
             unlockBy(transactionId);
         }

@@ -7,13 +7,11 @@ import com.github.example.UnitTest
 import com.github.example.exception.EntityAlreadyExistsException
 import com.github.example.exception.EntityNotFoundException
 import com.github.example.holder.LockHolder
-import com.github.example.model.Transaction
 import org.junit.Test
 import org.junit.experimental.categories.Category
 import spock.lang.Specification
 
 import static com.github.example.model.Transaction.TransactionStatus.PENDING
-import static java.math.BigDecimal.ONE
 
 @Category(UnitTest)
 class InMemoryTransactionDaoSpec extends Specification implements TestSupport {
@@ -24,7 +22,7 @@ class InMemoryTransactionDaoSpec extends Specification implements TestSupport {
     @Collaborator
     LockHolder lockHolder = Mock()
 
-    def transaction = TransactionStub()
+    def transaction = transactionStub()
 
     @Test
     def 'should throw exception when transaction for insertion is null'() {
@@ -50,12 +48,12 @@ class InMemoryTransactionDaoSpec extends Specification implements TestSupport {
     }
 
     @Test
-    def 'should return same transaction when it successfully inserted in storage'() {
+    def 'should insert transaction when storage does not contain transaction with same id'() {
         when:
-        def result = inMemoryTransactionDao.insert transaction
+        inMemoryTransactionDao.insert transaction
 
         then:
-        result == transaction
+        notThrown EntityAlreadyExistsException
     }
 
     @Test
@@ -82,7 +80,7 @@ class InMemoryTransactionDaoSpec extends Specification implements TestSupport {
     @Test
     def 'should return collection of all stored transactions sorted by creation date-time when storage contains more than one transaction'() {
         given:
-        def createdLaterTransaction = new Transaction('ref_1', firstAccountId, secondAccountId, ONE)
+        def createdLaterTransaction = transactionStub 'another_reference'
         and:
         inMemoryTransactionDao.insert transaction
         inMemoryTransactionDao.insert createdLaterTransaction
@@ -91,7 +89,7 @@ class InMemoryTransactionDaoSpec extends Specification implements TestSupport {
         def result = inMemoryTransactionDao.findAll()
 
         then:
-        result[0].createdAt < result[1].createdAt
+        result[0].createdAt <= result[1].createdAt
     }
 
     @Test
@@ -106,8 +104,8 @@ class InMemoryTransactionDaoSpec extends Specification implements TestSupport {
     @Test
     def 'should return collection of pending transactions when storage contains transactions with different statuses'() {
         given:
-        def failedTransaction = new Transaction('ref_1', firstAccountId, secondAccountId, ONE).failed('Failed')
-        def executedTransaction = new Transaction('ref_2', firstAccountId, secondAccountId, ONE).executed()
+        def failedTransaction = transactionStub('failed_reference').failed('Failed')
+        def executedTransaction = transactionStub('executed_reference').executed()
         and:
         inMemoryTransactionDao.insert failedTransaction
         inMemoryTransactionDao.insert executedTransaction
@@ -124,7 +122,7 @@ class InMemoryTransactionDaoSpec extends Specification implements TestSupport {
     @Test
     def 'should return collection of pending transactions sorted by creation date-time when storage contains more than one pending transaction'() {
         given:
-        def createdLaterPendingTransaction = new Transaction('ref_1', firstAccountId, secondAccountId, ONE)
+        def createdLaterPendingTransaction = transactionStub 'another_reference'
         and:
         inMemoryTransactionDao.insert transaction
         inMemoryTransactionDao.insert createdLaterPendingTransaction
@@ -133,13 +131,13 @@ class InMemoryTransactionDaoSpec extends Specification implements TestSupport {
         def result = inMemoryTransactionDao.findPending 3
 
         then:
-        result[0].createdAt < result[1].createdAt
+        result[0].createdAt <= result[1].createdAt
     }
 
     @Test
     def 'should return limited collection of pending transactions when storage contains more pending transactions then specified by limit'() {
         given:
-        def anotherPendingTransaction = new Transaction('ref_1', firstAccountId, secondAccountId, ONE)
+        def anotherPendingTransaction = transactionStub 'another_reference'
         and:
         inMemoryTransactionDao.insert anotherPendingTransaction
         inMemoryTransactionDao.insert transaction
