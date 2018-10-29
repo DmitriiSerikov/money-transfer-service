@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.example</groupId>
     <artifactId>money-transfer-service</artifactId>
-    <version>0.1</version>
+    <version>1.0</version>
     <properties>
         <exec.mainClass>com.github.example.Application</exec.mainClass>
         <micronaut.version>1.0.0</micronaut.version>
