@@ -5,7 +5,7 @@ import com.github.example.IntegrationTest
 import com.github.example.dao.AccountDao
 import com.github.example.dao.TransactionDao
 import com.github.example.model.Account
-import com.github.example.model.Transaction
+import com.github.example.model.TransactionBuilder
 import com.github.example.service.TransactionExecutionService
 import io.micronaut.context.ApplicationContext
 import org.junit.Test
@@ -45,14 +45,12 @@ class TransactionExecutionServiceISpec extends Specification implements ITestSup
         def txFromSecondToFirst = { executeTransaction secondAccountId, firstAccountId, txAmount as BigDecimal }
 
         when:
-        def result = executeConcurrentTasks count, txFromFirstToSecond, txFromSecondToFirst
+        executeConcurrentTasks count, txFromFirstToSecond, txFromSecondToFirst
         def firstFinalBalance = accountDao.getBy(firstAccountId).balance
         def secondFinalBalance = accountDao.getBy(secondAccountId).balance
 
         then:
         expectedSummaryBalance == firstFinalBalance + secondFinalBalance
-        result.success == count
-        result.failed == 0
 
         where:
         firstStartBalance | secondStartBalance | txAmount | count || expectedSummaryBalance
@@ -102,12 +100,7 @@ class TransactionExecutionServiceISpec extends Specification implements ITestSup
             def future = completionService.take()
             if (future.done) {
                 executed++
-                try {
-                    future.get()
-                    success++
-                } catch (ignored) {
-                    failed++
-                }
+                future.get() ? success++ : failed++
             }
         }
         executor.shutdown()
@@ -117,12 +110,21 @@ class TransactionExecutionServiceISpec extends Specification implements ITestSup
 
     def createAccount(BigDecimal initialBalance) {
         def account = new Account(initialBalance)
-        accountDao.insert(account).id
+
+        accountDao.insert(account)
+
+        account.id
     }
 
     def createTransaction(UUID firstAccountId, UUID secondAccountId, BigDecimal amount) {
-        def transaction = new Transaction(referenceId, firstAccountId, secondAccountId, amount)
-        transactionDao.insert(transaction).id
+        def transaction = TransactionBuilder.builder(referenceId)
+                .withdraw(firstAccountId, amount)
+                .deposit(secondAccountId, amount)
+                .build()
+
+        transactionDao.insert(transaction)
+
+        transaction.id
     }
 
     def executeTransaction(UUID firstAccountId, UUID secondAccountId, BigDecimal amount) {

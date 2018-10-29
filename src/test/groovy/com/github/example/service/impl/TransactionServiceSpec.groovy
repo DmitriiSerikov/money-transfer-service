@@ -6,11 +6,9 @@ import com.github.example.TestSupport
 import com.github.example.UnitTest
 import com.github.example.dao.TransactionDao
 import com.github.example.dto.request.CommandPerformTransfer
-import com.github.example.exception.CouldNotAcquireLockException
 import com.github.example.exception.EntityNotFoundException
 import com.github.example.model.Transaction
 import com.github.example.service.TransactionExecutionService
-import io.micronaut.http.server.exceptions.InternalServerException
 import org.junit.Test
 import org.junit.experimental.categories.Category
 import spock.lang.Shared
@@ -31,7 +29,7 @@ class TransactionServiceSpec extends Specification implements TestSupport {
     TransactionExecutionService executionService = Mock()
 
     @Shared
-    def transaction = TransactionStub()
+    def transaction = transactionStub()
     @Shared
     def transactionId = transaction.id
 
@@ -96,49 +94,45 @@ class TransactionServiceSpec extends Specification implements TestSupport {
     }
 
     @Test
-    def 'should insert transaction into transactions storage when transaction successfully created by transfer command'() {
+    def 'should throw exception when source and target accounts in the command are the same'() {
+        given:
+        def command = [sourceAccountId: firstAccountId, referenceId: referenceId,
+                       targetAccountId: firstAccountId, amount: amount] as CommandPerformTransfer
+
         when:
         transactionService.transferBy command
 
         then:
-        1 * transactionDao.insert({
-            it.referenceId == referenceId
-            it.sourceAccountId == firstAccountId
-            it.targetAccountId == secondAccountId
-            it.amount == amount
-        } as Transaction)
+        def ex = thrown IllegalArgumentException
+        ex.message == 'Money transfer to the same account is not allowed'
     }
 
     @Test
-    def 'should throw exception when transaction inserted into storage by transfer command is not found in storage during execution'() {
-        given:
-        executionService.executeBy(_ as UUID) >> { throw new EntityNotFoundException('Not found') }
-
+    def 'should insert transaction into transactions storage when transaction successfully created by command'() {
         when:
         transactionService.transferBy command
 
         then:
-        thrown InternalServerException
-    }
-
-    @Test
-    def 'should throw exception when failed to lock transaction during synchronous execution and failed to obtain transaction with actual status from storage'() {
-        given:
-        executionService.executeBy(_ as UUID) >> { throw new CouldNotAcquireLockException('Failed') }
-        and:
-        transactionDao.getBy(_ as UUID) >> { throw new EntityNotFoundException('Not found') }
-
-        when:
-        transactionService.transferBy command
-
-        then:
-        thrown InternalServerException
+        1 * transactionDao.insert({ it.referenceId == referenceId } as Transaction)
     }
 
     @Unroll
-    def 'should return transaction with status:#expectedStatus when failed to lock transaction during synchronous execution and storage returns transaction with #txFromStorage.status status'() {
+    def 'should return transaction created by command with PENDING status when transaction is not executed synchronously'() {
         given:
-        executionService.executeBy(_ as UUID) >> { throw new CouldNotAcquireLockException('Failed') }
+        executionService.executeBy(_ as UUID) >> false
+
+        when:
+        def result = transactionService.transferBy command
+
+        then:
+        result.status == PENDING
+        result.referenceId == command.referenceId
+    }
+
+    @Unroll
+    def 'should return transaction after execution with #expectedStatus status when transaction successfully executed synchronously'() {
+        given:
+        executionService.executeBy(_ as UUID) >> true
         and:
         transactionDao.getBy(_ as UUID) >> txFromStorage
 
@@ -147,58 +141,7 @@ class TransactionServiceSpec extends Specification implements TestSupport {
 
         then:
         result.status == expectedStatus
-
-        where:
-        txFromStorage          || expectedStatus
-        transaction            || PENDING
-        transaction.executed() || SUCCESS
-        transaction.failed()   || FAILED
-    }
-
-    @Test
-    def 'should throw exception when transaction already executed during synchronous execution and failed to obtain transaction with actual status from storage'() {
-        given:
-        executionService.executeBy(_ as UUID) >> { throw new IllegalStateException('Executed') }
-        and:
-        transactionDao.getBy(_ as UUID) >> { throw new EntityNotFoundException('Not found') }
-
-        when:
-        transactionService.transferBy command
-
-        then:
-        thrown InternalServerException
-    }
-
-    @Unroll
-    def 'should return transaction with status:#expectedStatus when transaction already executed during synchronous execution and storage returns transaction with #txFromStorage.status status'() {
-        given:
-        executionService.executeBy(_ as UUID) >> { throw new IllegalStateException('Executed') }
-        and:
-        transactionDao.getBy(_ as UUID) >> txFromStorage
-
-        when:
-        def result = transactionService.transferBy command
-
-        then:
-        result.status == expectedStatus
-
-        where:
-        txFromStorage          || expectedStatus
-        transaction            || PENDING
-        transaction.executed() || SUCCESS
-        transaction.failed()   || FAILED
-    }
-
-    @Unroll
-    def 'should return transaction with status:#expectedStatus when transaction with status #txFromStorage.status returned by service after successful synchronous execution'() {
-        given:
-        executionService.executeBy(_ as UUID) >> txFromStorage
-
-        when:
-        def result = transactionService.transferBy command
-
-        then:
-        result.status == expectedStatus
+        result.referenceId == command.referenceId
 
         where:
         txFromStorage          || expectedStatus

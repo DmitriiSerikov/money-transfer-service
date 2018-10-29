@@ -23,7 +23,7 @@ class AccountServiceSpec extends Specification implements TestSupport {
     @Collaborator
     AccountDao accountDao = Mock()
 
-    def account = AccountStub()
+    def account = accountStub()
 
     @Test
     def 'should return empty collection of accounts when accounts storage returns empty collection'() {
@@ -85,7 +85,7 @@ class AccountServiceSpec extends Specification implements TestSupport {
     }
 
     @Test
-    def 'should create account by given command and insert it into accounts storage when command for account creation is valid'() {
+    def 'should insert account into accounts storage when account successfully created by command'() {
         given:
         def initialBalance = ONE
         def command = new CommandCreateAccount(initialBalance: initialBalance)
@@ -98,15 +98,14 @@ class AccountServiceSpec extends Specification implements TestSupport {
     }
 
     @Test
-    def 'should return created account when account successfully inserted and returned by accounts storage'() {
+    def 'should return created account with initial balance when account successfully inserted into accounts storage'() {
         given:
-        def command = new CommandCreateAccount(initialBalance: ONE)
-        accountDao.insert(_ as Account) >> account
+        def command = new CommandCreateAccount(initialBalance: amount)
 
         when:
         def result = accountService.createBy command
 
         then:
-        result == account
+        result.balance == amount
     }
 }
