@@ -18,12 +18,12 @@ class EntityAlreadyExistsExceptionHandlerSpec extends Specification {
     @Subject
     EntityAlreadyExistsExceptionHandler exceptionHandler
 
-    def errorMessage = "Some message"
+    def errorMessage = 'Some message'
     def request = Mock(HttpRequest)
     def exception = new EntityAlreadyExistsException(errorMessage)
 
     @Test
-    def "should respond with conflict code when handle exception"() {
+    def 'should respond with conflict code when handle exception'() {
         when:
         def result = exceptionHandler.handle request, exception
 
@@ -32,7 +32,7 @@ class EntityAlreadyExistsExceptionHandlerSpec extends Specification {
     }
 
     @Test
-    def "should respond with error message in payload when handle exception"() {
+    def 'should respond with error message in payload when handle exception'() {
         when:
         def result = exceptionHandler.handle request, exception
 
@@ -41,9 +41,9 @@ class EntityAlreadyExistsExceptionHandlerSpec extends Specification {
     }
 
     @Test
-    def "should respond with reference to requested uri in payload when handle exception"() {
+    def 'should respond with reference to requested uri in payload when handle exception'() {
         given:
-        def expectedUri = uri("/some_uri")
+        def expectedUri = uri('/some_uri')
         request.getUri() >> expectedUri
 
         when:

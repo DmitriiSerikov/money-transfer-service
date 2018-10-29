@@ -2,6 +2,8 @@ package com.github.example
 
 import com.github.example.model.Account
 import com.github.example.model.Transaction
+import com.github.example.model.TransactionBuilder
+import com.github.example.model.TransactionEntry
 import groovy.transform.CompileStatic
 
 import static java.util.UUID.fromString
@@ -15,12 +17,18 @@ trait TestSupport {
     final String referenceId = 'reference'
     final BigDecimal amount = 10
 
-    Account AccountStub(BigDecimal initialBalance = 10) {
+    Account accountStub(BigDecimal initialBalance = 10) {
         new Account(initialBalance)
     }
 
-    Transaction TransactionStub(UUID sourceAccountId = firstAccountId, String refId = referenceId,
-                                UUID targetAccountId = secondAccountId, BigDecimal txAmount = amount) {
-        new Transaction(refId, sourceAccountId, targetAccountId, txAmount)
+    Transaction transactionStub(String refId = referenceId, UUID sourceAccountId = firstAccountId, UUID targetAccountId = secondAccountId, BigDecimal txAmount = amount) {
+        TransactionBuilder.builder(refId)
+                .withdraw(sourceAccountId, txAmount)
+                .deposit(targetAccountId, txAmount)
+                .build()
+    }
+
+    TransactionEntry getTransactionEntry(BigDecimal txAmount = amount, UUID accountId = firstAccountId) {
+        new TransactionEntry(accountId, txAmount)
     }
 }

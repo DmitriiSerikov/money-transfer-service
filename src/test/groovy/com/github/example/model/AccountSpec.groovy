@@ -1,27 +1,28 @@
 package com.github.example.model
 
+import com.github.example.TestSupport
 import com.github.example.UnitTest
 import org.junit.Test
 import org.junit.experimental.categories.Category
 import spock.lang.Specification
 
 @Category(UnitTest)
-class AccountSpec extends Specification {
+class AccountSpec extends Specification implements TestSupport {
 
     @Test
-    def 'should throw exception when trying initialize account with null balance'() {
+    def 'should throw exception when trying to initialize account with null balance'() {
         when:
         new Account(null)
 
         then:
         def ex = thrown IllegalArgumentException
-        ex.message == 'Initial balance cannot be null'
+        ex.message == 'Account balance cannot be null'
     }
 
     @Test
-    def 'should throw exception when trying initialize account with negative balance'() {
+    def 'should throw exception when trying to initialize account with negative balance'() {
         given:
-        def negativeBalance = new BigDecimal(-10)
+        def negativeBalance = -10 as BigDecimal
 
         when:
         new Account(negativeBalance)
@@ -32,27 +33,26 @@ class AccountSpec extends Specification {
     }
 
     @Test
-    def 'should throw exception when balance is negative after deposit to account'() {
+    def 'should throw exception when try to add amount by null instead of transaction entry'() {
         given:
-        def account = new Account(BigDecimal.ZERO)
-        def negativeAmount = new BigDecimal(-10)
+        def account = new Account(0 as BigDecimal)
 
         when:
-        account.deposit negativeAmount
+        account.addBy null
 
         then:
         def ex = thrown IllegalArgumentException
-        ex.message == 'Account balance should be positive or zero'
+        ex.message == 'Transaction entry cannot be null'
     }
 
     @Test
-    def 'should throw exception when balance is negative after withdrawal from account'() {
+    def 'should throw exception when after adding amount by transaction entry balance is negative'() {
         given:
-        def account = new Account(BigDecimal.ZERO)
-        def amount = BigDecimal.TEN
+        def account = new Account(0 as BigDecimal)
+        def entry = getTransactionEntry(-10 as BigDecimal)
 
         when:
-        account.withdraw amount
+        account.addBy entry
 
         then:
         def ex = thrown IllegalArgumentException
@@ -62,7 +62,7 @@ class AccountSpec extends Specification {
     @Test
     def 'should initialize account properties when initial balance is positive'() {
         given:
-        def initialBalance = BigDecimal.ZERO
+        def initialBalance = 0 as BigDecimal
 
         when:
         def result = new Account(initialBalance)
@@ -74,13 +74,13 @@ class AccountSpec extends Specification {
     }
 
     @Test
-    def 'should keep account immutable by returning new instance with copied and updated properties when deposit to account'() {
+    def 'should return new instance with copied and updated properties when add amount by transaction entry'() {
         given:
-        def initialAccount = new Account(BigDecimal.ZERO)
-        def amount = BigDecimal.TEN
+        def initialAccount = new Account(0 as BigDecimal)
+        def entry = getTransactionEntry(10 as BigDecimal)
 
         when:
-        def result = initialAccount.deposit amount
+        def result = initialAccount.addBy entry
 
         then:
         result != initialAccount
