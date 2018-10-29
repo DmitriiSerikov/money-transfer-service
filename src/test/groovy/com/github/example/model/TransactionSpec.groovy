@@ -11,10 +11,12 @@ import static com.github.example.model.Transaction.TransactionStatus.*
 @Category(UnitTest)
 class TransactionSpec extends Specification implements TestSupport {
 
+    def entries = transactionStub().entries
+
     @Test
-    def 'should throw exception when trying initialize transaction with null or blank string instead of reference id'() {
+    def 'should throw exception when trying to initialize transaction with null or blank reference id'() {
         when:
-        new Transaction(refId, firstAccountId, secondAccountId, BigDecimal.ONE)
+        new Transaction(refId, entries)
 
         then:
         def ex = thrown IllegalArgumentException
@@ -25,72 +27,53 @@ class TransactionSpec extends Specification implements TestSupport {
     }
 
     @Test
-    def 'should throw exception when trying initialize transaction with null amount'() {
+    def 'should throw exception when trying to initialize transaction with null or empty entries set'() {
         when:
-        new Transaction(referenceId, firstAccountId, secondAccountId, null)
+        new Transaction(referenceId, transactionEntries)
 
         then:
         def ex = thrown IllegalArgumentException
-        ex.message == 'Transaction amount cannot be null'
+        ex.message == 'Transactions entries should not be empty'
+
+        where:
+        transactionEntries << [null, [] as Set]
     }
 
     @Test
-    def 'should throw exception when trying initialize transaction with negative amount'() {
+    def 'should throw exception when trying to initialize transaction with only one entry'() {
         given:
-        def negativeAmount = new BigDecimal(-10)
+        def entries = [transactionEntry] as Set
 
         when:
-        new Transaction(referenceId, firstAccountId, secondAccountId, negativeAmount)
+        new Transaction(referenceId, entries)
 
         then:
         def ex = thrown IllegalArgumentException
-        ex.message == 'Transaction amount should be positive'
+        ex.message == 'Transactions should have at least two entries'
     }
 
     @Test
-    def 'should throw exception when trying initialize transaction with zero amount'() {
-        when:
-        new Transaction(referenceId, firstAccountId, secondAccountId, BigDecimal.ZERO)
-
-        then:
-        def ex = thrown IllegalArgumentException
-        ex.message == 'Transaction amount should be positive'
-    }
-
-    @Test
-    def 'should throw exception when trying initialize transaction between same account ids'() {
-        when:
-        new Transaction(referenceId, firstAccountId, firstAccountId, BigDecimal.ONE)
-
-        then:
-        def ex = thrown IllegalArgumentException
-        ex.message == 'Transactions to the same account is not allowed'
-    }
-
-    @Test
-    def 'should initialize transaction properties when reference id, amount and account ids are correct'() {
+    def 'should initialize transaction properties when reference id is not blank and two or more entries present'() {
         given:
-        def amount = BigDecimal.ONE
+        def entries = transactionStub().entries
 
         when:
-        def result = new Transaction(referenceId, firstAccountId, secondAccountId, amount)
+        def result = new Transaction(referenceId, entries)
 
         then:
         result.id
         !result.reasonCode
         !result.completedAt
-        result.amount == amount
-        result.status == PENDING
         result.referenceId == referenceId
-        result.sourceAccountId == firstAccountId
-        result.targetAccountId == secondAccountId
+        result.status == PENDING
+        result.entries == entries
         result.createdAt == result.updatedAt
     }
 
     @Test
-    def 'should keep transaction immutable by returning new instance with copied and updated properties when transaction is executed'() {
+    def 'should return new instance with copied and updated properties when transaction is executed'() {
         given:
-        def initialTransaction = new Transaction(referenceId, firstAccountId, secondAccountId, BigDecimal.ONE)
+        def initialTransaction = transactionStub()
 
         when:
         def result = initialTransaction.executed()
@@ -98,10 +81,8 @@ class TransactionSpec extends Specification implements TestSupport {
         then:
         result != initialTransaction
         result.id == initialTransaction.id
-        result.amount == initialTransaction.amount
         result.referenceId == initialTransaction.referenceId
-        result.sourceAccountId == initialTransaction.sourceAccountId
-        result.targetAccountId == initialTransaction.targetAccountId
+        result.entries == initialTransaction.entries
         result.createdAt == initialTransaction.createdAt
         result.updatedAt == result.completedAt
         result.reasonCode == initialTransaction.reasonCode
@@ -109,10 +90,10 @@ class TransactionSpec extends Specification implements TestSupport {
     }
 
     @Test
-    def 'should keep transaction immutable by returning new instance with copied and updated properties when transaction is failed'() {
+    def 'should return new instance with copied and updated properties when transaction is failed'() {
         given:
         def reasonOfFail = 'Some reason'
-        def initialTransaction = new Transaction(referenceId, firstAccountId, secondAccountId, BigDecimal.ONE)
+        def initialTransaction = transactionStub()
 
         when:
         def result = initialTransaction.failed reasonOfFail
@@ -120,10 +101,8 @@ class TransactionSpec extends Specification implements TestSupport {
         then:
         result != initialTransaction
         result.id == initialTransaction.id
-        result.amount == initialTransaction.amount
         result.referenceId == initialTransaction.referenceId
-        result.sourceAccountId == initialTransaction.sourceAccountId
-        result.targetAccountId == initialTransaction.targetAccountId
+        result.entries == initialTransaction.entries
         result.createdAt == initialTransaction.createdAt
         result.updatedAt == result.completedAt
         result.reasonCode == reasonOfFail
