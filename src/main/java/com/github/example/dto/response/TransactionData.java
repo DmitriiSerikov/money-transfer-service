@@ -1,10 +1,14 @@
 package com.github.example.dto.response;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
+@Schema(description = "Detailed information about the transaction")
 public class TransactionData implements Serializable {
     private static final long serialVersionUID = -1598024062752939479L;
 
@@ -17,6 +21,7 @@ public class TransactionData implements Serializable {
     private String reasonCode;
     private Set<TransactionEntryData> entries;
 
+    @Schema(type = "string", format = "uuid", description = "Unique identifier of the transaction")
     public UUID getId() {
         return id;
     }
@@ -25,6 +30,7 @@ public class TransactionData implements Serializable {
         this.id = id;
     }
 
+    @Schema(type = "string", description = "Unique value used to handle submitted duplicates")
     public String getReferenceId() {
         return referenceId;
     }
@@ -33,6 +39,7 @@ public class TransactionData implements Serializable {
         this.referenceId = referenceId;
     }
 
+    @Schema(type = "string", description = "Transaction processing status")
     public String getStatus() {
         return status;
     }
@@ -41,6 +48,7 @@ public class TransactionData implements Serializable {
         this.status = status;
     }
 
+    @Schema(type = "string", format = "date-time", description = "Instant when the transaction was created")
     public Instant getCreatedAt() {
         return createdAt;
     }
@@ -49,6 +57,7 @@ public class TransactionData implements Serializable {
         this.createdAt = createdAt;
     }
 
+    @Schema(type = "string", format = "date-time", description = "Instant when the transaction was last updated")
     public Instant getUpdatedAt() {
         return updatedAt;
     }
@@ -57,6 +66,7 @@ public class TransactionData implements Serializable {
         this.updatedAt = updatedAt;
     }
 
+    @Schema(type = "string", format = "date-time", description = "Instant when the transaction was completed")
     public Instant getCompletedAt() {
         return completedAt;
     }
@@ -65,6 +75,7 @@ public class TransactionData implements Serializable {
         this.completedAt = completedAt;
     }
 
+    @Schema(type = "string", description = "Reason code for failed transaction status")
     public String getReasonCode() {
         return reasonCode;
     }
@@ -73,6 +84,7 @@ public class TransactionData implements Serializable {
         this.reasonCode = reasonCode;
     }
 
+    @ArraySchema(uniqueItems = true, schema = @Schema(implementation = TransactionEntryData.class))
     public Set<TransactionEntryData> getEntries() {
         return entries;
     }

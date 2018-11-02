@@ -93,6 +93,11 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>1.2.3</version>
@@ -304,6 +309,11 @@
                             <arg>-parameters</arg>
                         </compilerArgs>
                         <annotationProcessorPaths>
+                            <!--<path>
+                                    <groupId>io.micronaut.configuration</groupId>
+                                    <artifactId>micronaut-openapi</artifactId>
+                                    <version>${micronaut.version}</version>
+                                </path>-->
                             <path>
                                 <groupId>io.micronaut</groupId>
                                 <artifactId>micronaut-inject-java</artifactId>

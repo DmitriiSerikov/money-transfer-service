@@ -1,6 +1,10 @@
 micronaut:
     application:
         name: money-transfer-service
+    router:
+        static-resources:
+            swagger:
+                paths: classpath:META-INF/swagger/
 
 jackson:
     serialization:
@@ -13,3 +17,8 @@ processing:
           limit: 500
     lockHolder:
           timeout: 5000
+
+money:
+    transfer:
+          api:
+              version: 1.0
