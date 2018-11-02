@@ -1,0 +1,362 @@
+openapi: 3.0.1
+info:
+  title: Money transfer service
+  description: Standalone service that exposes simple RESTful API for money transfers
+    between accounts
+  contact:
+    name: Dmitrii Serikov
+    url: https://www.linkedin.com/in/dmitry-serikov/
+  license:
+    name: MIT License
+    url: https://github.com/DmitriiSerikov/money-transfer-service/blob/master/LICENSE
+  version: '1.0'
+externalDocs:
+  description: Postman collection
+  url: https://www.getpostman.com/collections/57052f61858db233b359
+servers:
+- url: http://localhost:8080/api/1.0
+  description: Development environment
+- url: https://money-transfer-service.herokuapp.com/api/1.0
+  description: Staging environment
+paths:
+  /transfers:
+    post:
+      summary: Transfer
+      description: This endpoint processes transfers between accounts
+      operationId: performTransfer
+      requestBody:
+        description: Transfer data for processing. Duplicates are not allowed
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommandPerformTransfer'
+            example:
+              referenceId: 'e0cbf84637264ee082a848b'
+              sourceAccountId: 'e0675ddd-d809-489c-a512-fffd0f7230fc'
+              targetAccountId: '30df093a-6b72-4451-a87b-3d4507d93dd9'
+              amount: 10
+        required: true
+      responses:
+        200:
+          description: Transfer processing result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecutionResultData'
+              example:
+                id: 'b56a851d-9ac7-4858-a063-ade52bb09a8f'
+                status: FAILED
+                createdAt: '2018-11-01T17:32:28Z'
+                completedAt: '2018-11-01T17:33:20Z'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonError'
+              example:
+                message: 'Transaction already exists for referenceId:e0cbf84637264ee082a848b'
+  /transactions:
+    get:
+      summary: Get Transactions
+      description: This endpoint retrieves all transactions
+      operationId: getAllTransactions
+      responses:
+        200:
+          description: All transactions
+          content:
+            application/json:
+              schema:
+                 type: array
+                 items:
+                   $ref: '#/components/schemas/TransactionData'
+              example:
+                - id: 'b56a851d-9ac7-4858-a063-ade52bb09a8f'
+                  referenceId: 'e0cbf84637264ee082a848b'
+                  status: FAILED
+                  createdAt: '2018-11-01T17:32:28Z'
+                  updatedAt: '2018-11-01T17:33:20Z'
+                  completedAt: '2018-11-01T17:33:20Z'
+                  reasonCode: 'Account not exists for id: e0675ddd-d809-489c-a512-fffd0f7230fc'
+                  entries:
+                   - id: 'f5cfbdf2-497c-4795-a376-82b05cf33784'
+                     accountId: 'e0675ddd-d809-489c-a512-fffd0f7230fc'
+                     amount: -10
+                   - id: '78ff1b61-23ce-463c-8fca-c7535d6d234e'
+                     accountId: '30df093a-6b72-4451-a87b-3d4507d93dd9'
+                     amount: 10
+  /transactions/{transactionId}:
+    get:
+      summary: Get Transaction
+      description: This endpoint retrieves one of transactions by ID
+      operationId: getTransactionById
+      parameters:
+      - name: transactionId
+        in: path
+        description: ID of transaction
+        required: true
+        schema:
+          type: string
+          format: uuid
+          example: 'b56a851d-9ac7-4858-a063-ade52bb09a8f'
+      responses:
+        200:
+          description: Transaction by ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionData'
+              example:
+                id: 'b56a851d-9ac7-4858-a063-ade52bb09a8f'
+                referenceId: 'e0cbf84637264ee082a848b'
+                status: FAILED
+                createdAt: '2018-11-01T17:32:28Z'
+                updatedAt: '2018-11-01T17:33:20Z'
+                completedAt: '2018-11-01T17:33:20Z'
+                reasonCode: 'Account not exists for id: e0675ddd-d809-489c-a512-fffd0f7230fc'
+                entries:
+                 - id: 'f5cfbdf2-497c-4795-a376-82b05cf33784'
+                   accountId: 'e0675ddd-d809-489c-a512-fffd0f7230fc'
+                   amount: -10
+                 - id: '78ff1b61-23ce-463c-8fca-c7535d6d234e'
+                   accountId: '30df093a-6b72-4451-a87b-3d4507d93dd9'
+                   amount: 10
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonError'
+              example:
+                message: 'Transaction not exists for id: b56a851d-9ac7-4858-a063-ade52bb09a8f'
+  /accounts:
+    get:
+      summary: Get Accounts
+      description: This endpoint retrieves all accounts
+      operationId: getAllAccounts
+      responses:
+        200:
+          description: All accounts
+          content:
+            application/json:
+              schema:
+                 type: array
+                 items:
+                   $ref: '#/components/schemas/AccountData'
+              example:
+                - id: 'e0675ddd-d809-489c-a512-fffd0f7230fc'
+                  balance: 100
+                  createdAt: '2018-11-01T17:32:28Z'
+                  updatedAt: '2018-11-01T17:32:28Z'
+    post:
+      summary: Create Account
+      description: This endpoint creates new account by initial parameters
+      operationId: createAccount
+      requestBody:
+        description: Account to add to the service. Duplicates are allowed
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommandCreateAccount'
+            example:
+              initialBalance: 100
+        required: true
+      responses:
+        201:
+          description: Created account
+          headers:
+            location:
+              description: Created account location
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountData'
+              example:
+                id: 'e0675ddd-d809-489c-a512-fffd0f7230fc'
+                balance: 100
+                createdAt: '2018-11-01T17:32:28Z'
+                updatedAt: '2018-11-01T17:32:28Z'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonError'
+              example:
+                message: 'Account balance should be positive or zero'
+  /accounts/{accountId}:
+    get:
+      summary: Get Account
+      description: This endpoint retrieves one of accounts by ID
+      operationId: getAccountById
+      parameters:
+      - name: accountId
+        in: path
+        description: ID of account
+        required: true
+        schema:
+          type: string
+          format: uuid
+          example: 'e0675ddd-d809-489c-a512-fffd0f7230fc'
+      responses:
+        200:
+          description: Account by ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountData'
+              example:
+                id: 'e0675ddd-d809-489c-a512-fffd0f7230fc'
+                balance: 100
+                createdAt: '2018-11-01T17:32:28Z'
+                updatedAt: '2018-11-01T17:32:28Z'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonError'
+              example:
+                message: 'Account not exists for id: e0675ddd-d809-489c-a512-fffd0f7230fc'
+components:
+  schemas:
+    ExecutionResultData:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier of the created transaction
+        status:
+          type: string
+          enum:
+            - PENDING
+            - SUCCESS
+            - FAILED
+          description: Transaction processing status
+        createdAt:
+          type: string
+          format: date-time
+          description: Instant when the transaction was created
+        completedAt:
+          type: string
+          format: date-time
+          description: Instant when the transaction was completed
+      description: Basic information about transaction processing
+    CommandPerformTransfer:
+      type: object
+      properties:
+        referenceId:
+          type: string
+          minLength: 1
+          maxLength: 40
+          description: Unique value used to handle submitted duplicates
+        sourceAccountId:
+          type: string
+          format: uuid
+          description: Unique identifier of a source account
+        targetAccountId:
+          type: string
+          format: uuid
+          description: Unique identifier of a target account
+        amount:
+          type: number
+          minimum: 0
+          description: Transaction amount
+      required:
+          - referenceId
+          - sourceAccountId
+          - targetAccountId
+          - amount
+      description: Initial data for creation of the transfer transaction
+    TransactionEntryData:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier of the transaction entry
+        accountId:
+          type: string
+          format: uuid
+          description: Unique identifier of the account the transaction is associated with
+        amount:
+          type: number
+          description: Transaction amount
+      description: Detailed information about the transaction entry
+    TransactionData:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier of the transaction
+        referenceId:
+          type: string
+          description: Unique value used to handle submitted duplicates
+        status:
+          type: string
+          enum:
+            - PENDING
+            - SUCCESS
+            - FAILED
+          description: Transaction processing status
+        createdAt:
+          type: string
+          format: date-time
+          description: Instant when the transaction was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: Instant when the transaction was last updated
+        completedAt:
+          type: string
+          format: date-time
+          description: Instant when the transaction was completed
+        reasonCode:
+          type: string
+          description: Reason code for failed transaction status
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransactionEntryData'
+      description: Detailed information about the transaction
+    AccountData:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier of the bank account
+        balance:
+          type: number
+          description: Available balance of the bank account
+        createdAt:
+          type: string
+          format: date-time
+          description: Instant when the account was created
+        updatedAt:
+          type: string
+          format: date-time
+          description: Instant when the account was last updated
+      description: Basic information about the bank account
+    CommandCreateAccount:
+      type: object
+      properties:
+        initialBalance:
+          type: number
+          minimum: 0
+          description: Initial balance of the bank account
+      required:
+        - initialBalance
+      description: Initial data for creation of the bank account
+    JsonError:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Message describing error
+      description: Information about the error
