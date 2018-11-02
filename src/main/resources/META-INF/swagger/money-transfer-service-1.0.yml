@@ -60,6 +60,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/JsonError'
               example:
+                _link:
+                  self:
+                    href: '/api/1.0/transfers'
+                    templated: false
                 message: 'Transaction already exists for referenceId:e0cbf84637264ee082a848b'
   /transactions:
     get:
@@ -137,6 +141,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/JsonError'
               example:
+                _link:
+                  self:
+                    href: '/api/1.0/transactions/b56a851d-9ac7-4858-a063-ade52bb09a8f'
+                    templated: false
                 message: 'Transaction not exists for id: b56a851d-9ac7-4858-a063-ade52bb09a8f'
   /accounts:
     get:
@@ -199,6 +207,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/JsonError'
               example:
+                _link:
+                  self:
+                    href: '/api/1.0/accounts'
+                    templated: false
                 message: 'Account balance should be positive or zero'
   /accounts/{accountId}:
     get:
@@ -235,6 +247,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/JsonError'
               example:
+                _link:
+                  self:
+                    href: '/api/1.0/accounts/e0675ddd-d809-489c-a512-fffd0f7230fc'
+                    templated: false
                 message: 'Account not exists for id: e0675ddd-d809-489c-a512-fffd0f7230fc'
 components:
   schemas:
@@ -371,6 +387,16 @@ components:
     JsonError:
       type: object
       properties:
+        _link:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                templated:
+                  type: boolean
         message:
           type: string
           description: Message describing error
