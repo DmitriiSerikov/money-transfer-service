@@ -15,7 +15,7 @@ public final class Account {
     private final Instant updatedAt;
 
     public Account(final BigDecimal initialBalance) {
-        checkBalanceIsPositive(initialBalance);
+        checkBalanceIsPositiveOrZero(initialBalance);
 
         Instant currentInstant = Instant.now();
         this.id = UUID.randomUUID();
@@ -25,7 +25,7 @@ public final class Account {
     }
 
     private Account(Account account, final BigDecimal changedBalance) {
-        checkBalanceIsPositive(changedBalance);
+        checkBalanceIsPositiveOrZero(changedBalance);
 
         this.id = account.id;
         this.createdAt = account.createdAt;
@@ -55,7 +55,7 @@ public final class Account {
         return new Account(this, balance.add(entry.getAmount()));
     }
 
-    private static void checkBalanceIsPositive(final BigDecimal balance) {
+    private static void checkBalanceIsPositiveOrZero(final BigDecimal balance) {
         Assert.notNull(balance, "Account balance");
         Assert.isTrue(balance.signum() >= 0, "Account balance should be positive or zero");
     }
