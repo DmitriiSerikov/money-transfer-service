@@ -1,0 +1,729 @@
+{
+	"info": {
+		"_postman_id": "c40aab4d-5b59-ec47-8877-0fe92d346d83",
+		"name": "money-transfer-service-api",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Accounts",
+			"item": [
+				{
+					"name": "Get Accounts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{server_url}}/accounts",
+							"host": [
+								"{{server_url}}"
+							],
+							"path": [
+								"accounts"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "GET a non-empty collection of accounts",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{server_url}}/accounts",
+									"host": [
+										"{{server_url}}"
+									],
+									"path": [
+										"accounts"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "[\n    {\n        \"id\": \"5737dc60-bb21-4bc1-a28b-75aeab5cacf7\",\n        \"balance\": 30,\n        \"createdAt\": \"2018-11-02T18:36:04.983Z\",\n        \"updatedAt\": \"2018-11-02T18:36:04.983Z\"\n    },\n    {\n        \"id\": \"5f33c71c-97d3-4ed7-a628-5505d754f9d8\",\n        \"balance\": 30,\n        \"createdAt\": \"2018-11-02T18:33:27.692Z\",\n        \"updatedAt\": \"2018-11-02T18:33:27.692Z\"\n    }\n]"
+						},
+						{
+							"name": "GET an empty collection of accounts",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{server_url}}/accounts",
+									"host": [
+										"{{server_url}}"
+									],
+									"path": [
+										"accounts"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "[]"
+						}
+					]
+				},
+				{
+					"name": "Get Account",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{server_url}}/accounts/3f87e3f1-ca7c-4d34-bbff-c6b810aa2fcc",
+							"host": [
+								"{{server_url}}"
+							],
+							"path": [
+								"accounts",
+								"3f87e3f1-ca7c-4d34-bbff-c6b810aa2fcc"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "GET an existed account by ID",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{server_url}}/accounts/5737dc60-bb21-4bc1-a28b-75aeab5cacf7",
+									"host": [
+										"{{server_url}}"
+									],
+									"path": [
+										"accounts",
+										"5737dc60-bb21-4bc1-a28b-75aeab5cacf7"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"5737dc60-bb21-4bc1-a28b-75aeab5cacf7\",\n    \"balance\": 30,\n    \"createdAt\": \"2018-11-02T18:36:04.983Z\",\n    \"updatedAt\": \"2018-11-02T18:36:04.983Z\"\n}"
+						},
+						{
+							"name": "GET a non-existent account by ID",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{server_url}}/accounts/3f87e3f1-ca7c-4d34-bbff-c6b810aa2fcc",
+									"host": [
+										"{{server_url}}"
+									],
+									"path": [
+										"accounts",
+										"3f87e3f1-ca7c-4d34-bbff-c6b810aa2fcc"
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"_links\": {\n        \"self\": {\n            \"href\": \"/api/1.0/accounts/3f87e3f1-ca7c-4d34-bbff-c6b810aa2fcc\",\n            \"templated\": false\n        }\n    },\n    \"message\": \"Account not exists for id: 3f87e3f1-ca7c-4d34-bbff-c6b810aa2fcc\"\n}"
+						},
+						{
+							"name": "GET an account by ID with wrong format",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{server_url}}/accounts/328731",
+									"host": [
+										"{{server_url}}"
+									],
+									"path": [
+										"accounts",
+										"328731"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"_links\": {\n        \"self\": {\n            \"href\": \"/api/1.0/accounts/328731\",\n            \"templated\": false\n        }\n    },\n    \"message\": \"Failed to convert argument [accountId] for value [328731] due to: Invalid UUID string: 328731\",\n    \"path\": \"/accountId\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Create Account",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"initialBalance\": 30\n}"
+						},
+						"url": {
+							"raw": "{{server_url}}/accounts",
+							"host": [
+								"{{server_url}}"
+							],
+							"path": [
+								"accounts"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "POST an account with an empty balance",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{}"
+								},
+								"url": {
+									"raw": "{{server_url}}/accounts",
+									"host": [
+										"{{server_url}}"
+									],
+									"path": [
+										"accounts"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"_links\": {\n        \"self\": {\n            \"href\": \"/api/1.0/accounts\",\n            \"templated\": false\n        }\n    },\n    \"message\": \"Account balance cannot be null\"\n}"
+						},
+						{
+							"name": "POST an account with a negative balance",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"initialBalance\": -30\n}"
+								},
+								"url": {
+									"raw": "{{server_url}}/accounts",
+									"host": [
+										"{{server_url}}"
+									],
+									"path": [
+										"accounts"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"_links\": {\n        \"self\": {\n            \"href\": \"/api/1.0/accounts\",\n            \"templated\": false\n        }\n    },\n    \"message\": \"Account balance should be positive or zero\"\n}"
+						},
+						{
+							"name": "POST a successfully created account",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"initialBalance\": 30\n}"
+								},
+								"url": {
+									"raw": "{{server_url}}/accounts",
+									"host": [
+										"{{server_url}}"
+									],
+									"path": [
+										"accounts"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Location",
+									"value": "/api/1.0/accounts/5f33c71c-97d3-4ed7-a628-5505d754f9d8"
+								},
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"5f33c71c-97d3-4ed7-a628-5505d754f9d8\",\n    \"balance\": 30,\n    \"createdAt\": \"2018-11-02T18:33:27.692Z\",\n    \"updatedAt\": \"2018-11-02T18:33:27.692Z\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Transactions",
+			"item": [
+				{
+					"name": "Get Transactions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{server_url}}/transactions",
+							"host": [
+								"{{server_url}}"
+							],
+							"path": [
+								"transactions"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "GET a non-empty collection of transactions",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{server_url}}/transactions",
+									"host": [
+										"{{server_url}}"
+									],
+									"path": [
+										"transactions"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "[\n    {\n        \"id\": \"7ffa2771-b2a3-4128-ad6e-04d5cf73a9e5\",\n        \"referenceId\": \"e0cbf84637264ee082a848c\",\n        \"status\": \"SUCCESS\",\n        \"createdAt\": \"2018-11-02T19:13:51.735Z\",\n        \"updatedAt\": \"2018-11-02T19:13:51.746Z\",\n        \"completedAt\": \"2018-11-02T19:13:51.746Z\",\n        \"entries\": [\n            {\n                \"id\": \"a09e5cd8-8243-40a0-a23e-2553dc83319a\",\n                \"accountId\": \"1baea0e5-5f74-40c0-9d46-bc14e88367b2\",\n                \"amount\": -30\n            },\n            {\n                \"id\": \"cf5ed5e3-2477-4e12-8c25-f8261fc21639\",\n                \"accountId\": \"7a84d76a-b63e-4841-beaf-a7f7f1906d57\",\n                \"amount\": 30\n            }\n        ]\n    }\n]"
+						},
+						{
+							"name": "GET an empty collection of transactions",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{server_url}}/transactions",
+									"host": [
+										"{{server_url}}"
+									],
+									"path": [
+										"transactions"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "[]"
+						}
+					]
+				},
+				{
+					"name": "Get Transaction",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{server_url}}/transactions/f342bc6e-3550-4a15-8c03-7046b45c50af",
+							"host": [
+								"{{server_url}}"
+							],
+							"path": [
+								"transactions",
+								"f342bc6e-3550-4a15-8c03-7046b45c50af"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "GET an transaction by ID with wrong format",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{server_url}}/transactions/123456",
+									"host": [
+										"{{server_url}}"
+									],
+									"path": [
+										"transactions",
+										"123456"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"_links\": {\n        \"self\": {\n            \"href\": \"/api/1.0/transactions/123456\",\n            \"templated\": false\n        }\n    },\n    \"message\": \"Failed to convert argument [transactionId] for value [123456] due to: Invalid UUID string: 123456\",\n    \"path\": \"/transactionId\"\n}"
+						},
+						{
+							"name": "GET an existed transaction by ID",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{server_url}}/transactions/7ffa2771-b2a3-4128-ad6e-04d5cf73a9e5",
+									"host": [
+										"{{server_url}}"
+									],
+									"path": [
+										"transactions",
+										"7ffa2771-b2a3-4128-ad6e-04d5cf73a9e5"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"7ffa2771-b2a3-4128-ad6e-04d5cf73a9e5\",\n    \"referenceId\": \"e0cbf84637264ee082a848c\",\n    \"status\": \"SUCCESS\",\n    \"createdAt\": \"2018-11-02T19:13:51.735Z\",\n    \"updatedAt\": \"2018-11-02T19:13:51.746Z\",\n    \"completedAt\": \"2018-11-02T19:13:51.746Z\",\n    \"entries\": [\n        {\n            \"id\": \"cf5ed5e3-2477-4e12-8c25-f8261fc21639\",\n            \"accountId\": \"7a84d76a-b63e-4841-beaf-a7f7f1906d57\",\n            \"amount\": 30\n        },\n        {\n            \"id\": \"a09e5cd8-8243-40a0-a23e-2553dc83319a\",\n            \"accountId\": \"1baea0e5-5f74-40c0-9d46-bc14e88367b2\",\n            \"amount\": -30\n        }\n    ]\n}"
+						},
+						{
+							"name": "GET a non-existent transaction by ID",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{server_url}}/transactions/f342bc6e-3550-4a15-8c03-7046b45c50af",
+									"host": [
+										"{{server_url}}"
+									],
+									"path": [
+										"transactions",
+										"f342bc6e-3550-4a15-8c03-7046b45c50af"
+									]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"_links\": {\n        \"self\": {\n            \"href\": \"/api/1.0/transactions/f342bc6e-3550-4a15-8c03-7046b45c50af\",\n            \"templated\": false\n        }\n    },\n    \"message\": \"Transaction not exists for id: f342bc6e-3550-4a15-8c03-7046b45c50af\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Transfer",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"referenceId\": \"e0cbf84637264ee082a848c\",\n\t\"sourceAccountId\": \"3f87e3f1-ca7c-4d34-bbff-c6b810aa2fcc\",\n\t\"targetAccountId\": \"4000f4de-dee4-4ec4-863b-08deb5b48371\",\n\t\"amount\": 30\n}"
+				},
+				"url": {
+					"raw": "{{server_url}}/transfers",
+					"host": [
+						"{{server_url}}"
+					],
+					"path": [
+						"transfers"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "POST a transfer with failed execution result",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"referenceId\": \"e0cbf84637264ee082a848c\",\n\t\"sourceAccountId\": \"3f87e3f1-ca7c-4d34-bbff-c6b810aa2fcc\",\n\t\"targetAccountId\": \"4000f4de-dee4-4ec4-863b-08deb5b48371\",\n\t\"amount\": 30\n}"
+						},
+						"url": {
+							"raw": "{{server_url}}/transfers",
+							"host": [
+								"{{server_url}}"
+							],
+							"path": [
+								"transfers"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "content-type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"id\": \"c097621f-973a-4f78-9a85-cfa93cab73c6\",\n    \"status\": \"FAILED\",\n    \"createdAt\": \"2018-11-02T18:21:05.055Z\",\n    \"completedAt\": \"2018-11-02T18:21:05.093Z\"\n}"
+				},
+				{
+					"name": "POST a transfer with an duplicate reference ID",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"referenceId\": \"e0cbf84637264ee082a84b\",\n\t\"sourceAccountId\": \"5737dc60-bb21-4bc1-a28b-75aeab5cacf7\",\n\t\"targetAccountId\": \"5f33c71c-97d3-4ed7-a628-5505d754f9d8\",\n\t\"amount\": 10\n}"
+						},
+						"url": {
+							"raw": "{{server_url}}/transfers",
+							"host": [
+								"{{server_url}}"
+							],
+							"path": [
+								"transfers"
+							]
+						}
+					},
+					"status": "Conflict",
+					"code": 409,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "content-type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"_links\": {\n        \"self\": {\n            \"href\": \"/api/1.0/transfers\",\n            \"templated\": false\n        }\n    },\n    \"message\": \"Transaction already exists for referenceId:e0cbf84637264ee082a84b\"\n}"
+				},
+				{
+					"name": "POST a transfer with success execution result",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"referenceId\": \"e0cbf84637264ee082a84f\",\n\t\"sourceAccountId\": \"5737dc60-bb21-4bc1-a28b-75aeab5cacf7\",\n\t\"targetAccountId\": \"5f33c71c-97d3-4ed7-a628-5505d754f9d8\",\n\t\"amount\": 10\n}"
+						},
+						"url": {
+							"raw": "{{server_url}}/transfers",
+							"host": [
+								"{{server_url}}"
+							],
+							"path": [
+								"transfers"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "content-type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"id\": \"fe0370b7-46a7-4ca8-a3a3-b729cf91a73a\",\n    \"status\": \"SUCCESS\",\n    \"createdAt\": \"2018-11-02T18:53:06.626Z\",\n    \"completedAt\": \"2018-11-02T18:53:06.628Z\"\n}"
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "314ffc42-9917-40ec-99eb-99b9d954f640",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "a77050be-1496-4da7-a612-e607d6f513d1",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "07b2b9f5-d290-4be1-9ca9-975e39684904",
+			"key": "api_version",
+			"value": "1.0",
+			"type": "string"
+		}
+	]
+}
