@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.info.License;
 import io.swagger.v3.oas.annotations.servers.Server;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @OpenAPIDefinition(
         info = @Info(
@@ -16,6 +17,10 @@ import io.swagger.v3.oas.annotations.servers.Server;
                 license = @License(name = "MIT License", url = "https://github.com/DmitriiSerikov/money-transfer-service/blob/master/LICENSE"),
                 contact = @Contact(name = "Dmitrii Serikov", url = "https://www.linkedin.com/in/dmitry-serikov/")
         ),
+        tags = {
+                @Tag(name = "Transactions"),
+                @Tag(name = "Accounts")
+        },
         servers = {
                 @Server(url = "http://localhost:8080/api/1.0", description = "Development environment"),
                 @Server(url = "https://money-transfer-service.herokuapp.com/api/1.0", description = "Staging environment")

@@ -34,7 +34,10 @@ public class AccountController extends AbstractController<Account, AccountData> 
 
     @Get
     @Produces
-    @Operation(summary = "Get Accounts", description = "This endpoint retrieves all accounts")
+    @Operation(
+            summary = "Get Accounts", tags = "Accounts",
+            description = "This endpoint retrieves all accounts"
+    )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -51,7 +54,10 @@ public class AccountController extends AbstractController<Account, AccountData> 
 
     @Get(uri = "/{accountId}")
     @Produces
-    @Operation(summary = "Get Account", description = "This endpoint retrieves one of accounts by ID")
+    @Operation(
+            summary = "Get Account", tags = "Accounts",
+            description = "This endpoint retrieves one of accounts by ID"
+    )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -77,7 +83,10 @@ public class AccountController extends AbstractController<Account, AccountData> 
     @Post
     @Consumes
     @Produces
-    @Operation(summary = "Create Account", description = "This endpoint creates new account by initial parameters")
+    @Operation(
+            summary = "Create Account", tags = "Accounts",
+            description = "This endpoint creates new account by initial parameters"
+    )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "201",

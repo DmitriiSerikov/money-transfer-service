@@ -34,7 +34,7 @@ public class TransactionController extends AbstractController<Transaction, Trans
     @Get
     @Produces
     @Operation(
-            summary = "Get Transactions",
+            summary = "Get Transactions", tags = "Transactions",
             description = "This endpoint retrieves all transactions",
             parameters = @Parameter(description = "ID of transaction")
     )
@@ -54,7 +54,10 @@ public class TransactionController extends AbstractController<Transaction, Trans
 
     @Get(uri = "/{transactionId}")
     @Produces
-    @Operation(summary = "Get Transaction", description = "This endpoint retrieves one of transactions by ID")
+    @Operation(
+            summary = "Get Transaction", tags = "Transactions",
+            description = "This endpoint retrieves one of transactions by ID"
+    )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",

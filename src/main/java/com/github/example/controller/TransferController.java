@@ -29,7 +29,10 @@ public class TransferController extends AbstractController<Transaction, Executio
     @Post
     @Consumes
     @Produces
-    @Operation(summary = "Transfer", description = "This endpoint processes transfers between accounts")
+    @Operation(
+            summary = "Transfer", tags = "Transactions",
+            description = "This endpoint processes transfers between accounts"
+    )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
