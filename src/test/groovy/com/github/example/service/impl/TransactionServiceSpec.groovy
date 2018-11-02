@@ -108,6 +108,20 @@ class TransactionServiceSpec extends Specification implements TestSupport {
     }
 
     @Test
+    def 'should throw exception when source and target accounts are null'() {
+        given:
+        def command = [sourceAccountId: null, referenceId: referenceId,
+                       targetAccountId: null, amount: amount] as CommandPerformTransfer
+
+        when:
+        transactionService.transferBy command
+
+        then:
+        def ex = thrown IllegalArgumentException
+        ex.message == 'Money transfer to the same account is not allowed'
+    }
+
+    @Test
     def 'should insert transaction into transactions storage when transaction successfully created by command'() {
         when:
         transactionService.transferBy command

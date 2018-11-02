@@ -12,6 +12,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.UUID;
 
 @Singleton
@@ -44,7 +45,7 @@ public class TransactionServiceImpl implements TransactionService {
         final UUID targetAccountId = command.getTargetAccountId();
         final BigDecimal amount = command.getAmount();
 
-        if (sourceAccountId.equals(targetAccountId)) {
+        if (Objects.equals(sourceAccountId, targetAccountId)) {
             throw new IllegalArgumentException("Money transfer to the same account is not allowed");
         }
 
