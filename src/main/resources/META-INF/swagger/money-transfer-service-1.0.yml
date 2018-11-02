@@ -14,10 +14,10 @@ externalDocs:
   description: Postman collection
   url: https://www.getpostman.com/collections/57052f61858db233b359
 servers:
-- url: http://localhost:8080/api/1.0
-  description: Development environment
-- url: https://money-transfer-service.herokuapp.com/api/1.0
-  description: Staging environment
+- url: /api/{api_version}
+  variables:
+    api_version:
+      default: '1.0'
 tags:
 - name: Transactions
 - name: Accounts
@@ -25,7 +25,7 @@ paths:
   /transfers:
     post:
       tags:
-        - Transactions
+      - Transactions
       summary: Transfer
       description: This endpoint processes transfers between accounts
       operationId: performTransfer
@@ -68,7 +68,7 @@ paths:
   /transactions:
     get:
       tags:
-        - Transactions
+      - Transactions
       summary: Get Transactions
       description: This endpoint retrieves all transactions
       operationId: getAllTransactions
@@ -78,28 +78,28 @@ paths:
           content:
             application/json:
               schema:
-                 type: array
-                 items:
-                   $ref: '#/components/schemas/TransactionData'
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionData'
               example:
-                - id: 'b56a851d-9ac7-4858-a063-ade52bb09a8f'
-                  referenceId: 'e0cbf84637264ee082a848b'
-                  status: FAILED
-                  createdAt: '2018-11-01T17:32:28Z'
-                  updatedAt: '2018-11-01T17:33:20Z'
-                  completedAt: '2018-11-01T17:33:20Z'
-                  reasonCode: 'Account not exists for id: e0675ddd-d809-489c-a512-fffd0f7230fc'
-                  entries:
-                   - id: 'f5cfbdf2-497c-4795-a376-82b05cf33784'
-                     accountId: 'e0675ddd-d809-489c-a512-fffd0f7230fc'
-                     amount: -10
-                   - id: '78ff1b61-23ce-463c-8fca-c7535d6d234e'
-                     accountId: '30df093a-6b72-4451-a87b-3d4507d93dd9'
-                     amount: 10
+              - id: 'b56a851d-9ac7-4858-a063-ade52bb09a8f'
+                referenceId: 'e0cbf84637264ee082a848b'
+                status: FAILED
+                createdAt: '2018-11-01T17:32:28Z'
+                updatedAt: '2018-11-01T17:33:20Z'
+                completedAt: '2018-11-01T17:33:20Z'
+                reasonCode: 'Account not exists for id: e0675ddd-d809-489c-a512-fffd0f7230fc'
+                entries:
+                - id: 'f5cfbdf2-497c-4795-a376-82b05cf33784'
+                  accountId: 'e0675ddd-d809-489c-a512-fffd0f7230fc'
+                  amount: -10
+                - id: '78ff1b61-23ce-463c-8fca-c7535d6d234e'
+                  accountId: '30df093a-6b72-4451-a87b-3d4507d93dd9'
+                  amount: 10
   /transactions/{transactionId}:
     get:
       tags:
-        - Transactions
+      - Transactions
       summary: Get Transaction
       description: This endpoint retrieves one of transactions by ID
       operationId: getTransactionById
@@ -128,12 +128,12 @@ paths:
                 completedAt: '2018-11-01T17:33:20Z'
                 reasonCode: 'Account not exists for id: e0675ddd-d809-489c-a512-fffd0f7230fc'
                 entries:
-                 - id: 'f5cfbdf2-497c-4795-a376-82b05cf33784'
-                   accountId: 'e0675ddd-d809-489c-a512-fffd0f7230fc'
-                   amount: -10
-                 - id: '78ff1b61-23ce-463c-8fca-c7535d6d234e'
-                   accountId: '30df093a-6b72-4451-a87b-3d4507d93dd9'
-                   amount: 10
+                - id: 'f5cfbdf2-497c-4795-a376-82b05cf33784'
+                  accountId: 'e0675ddd-d809-489c-a512-fffd0f7230fc'
+                  amount: -10
+                - id: '78ff1b61-23ce-463c-8fca-c7535d6d234e'
+                  accountId: '30df093a-6b72-4451-a87b-3d4507d93dd9'
+                  amount: 10
         default:
           description: Unexpected error
           content:
@@ -149,7 +149,7 @@ paths:
   /accounts:
     get:
       tags:
-        - Accounts
+      - Accounts
       summary: Get Accounts
       description: This endpoint retrieves all accounts
       operationId: getAllAccounts
@@ -159,17 +159,17 @@ paths:
           content:
             application/json:
               schema:
-                 type: array
-                 items:
-                   $ref: '#/components/schemas/AccountData'
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountData'
               example:
-                - id: 'e0675ddd-d809-489c-a512-fffd0f7230fc'
-                  balance: 100
-                  createdAt: '2018-11-01T17:32:28Z'
-                  updatedAt: '2018-11-01T17:32:28Z'
+              - id: 'e0675ddd-d809-489c-a512-fffd0f7230fc'
+                balance: 100
+                createdAt: '2018-11-01T17:32:28Z'
+                updatedAt: '2018-11-01T17:32:28Z'
     post:
       tags:
-        - Accounts
+      - Accounts
       summary: Create Account
       description: This endpoint creates new account by initial parameters
       operationId: createAccount
@@ -215,7 +215,7 @@ paths:
   /accounts/{accountId}:
     get:
       tags:
-        - Accounts
+      - Accounts
       summary: Get Account
       description: This endpoint retrieves one of accounts by ID
       operationId: getAccountById
@@ -264,9 +264,9 @@ components:
         status:
           type: string
           enum:
-            - PENDING
-            - SUCCESS
-            - FAILED
+          - PENDING
+          - SUCCESS
+          - FAILED
           description: Transaction processing status
         createdAt:
           type: string
@@ -298,10 +298,10 @@ components:
           minimum: 0
           description: Transaction amount
       required:
-          - referenceId
-          - sourceAccountId
-          - targetAccountId
-          - amount
+      - referenceId
+      - sourceAccountId
+      - targetAccountId
+      - amount
       description: Initial data for creation of the transfer transaction
     TransactionEntryData:
       type: object
@@ -331,9 +331,9 @@ components:
         status:
           type: string
           enum:
-            - PENDING
-            - SUCCESS
-            - FAILED
+          - PENDING
+          - SUCCESS
+          - FAILED
           description: Transaction processing status
         createdAt:
           type: string
@@ -382,7 +382,7 @@ components:
           minimum: 0
           description: Initial balance of the bank account
       required:
-        - initialBalance
+      - initialBalance
       description: Initial data for creation of the bank account
     JsonError:
       type: object

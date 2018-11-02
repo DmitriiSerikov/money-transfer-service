@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.info.License;
 import io.swagger.v3.oas.annotations.servers.Server;
+import io.swagger.v3.oas.annotations.servers.ServerVariable;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @OpenAPIDefinition(
@@ -21,10 +22,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
                 @Tag(name = "Transactions"),
                 @Tag(name = "Accounts")
         },
-        servers = {
-                @Server(url = "http://localhost:8080/api/1.0", description = "Development environment"),
-                @Server(url = "https://money-transfer-service.herokuapp.com/api/1.0", description = "Staging environment")
-        },
+        servers = @Server(
+                url = "/api/{api_version}",
+                variables = @ServerVariable(name = "api_version", defaultValue = "1.0")
+        ),
         externalDocs = @ExternalDocumentation(url = "https://www.getpostman.com/collections/57052f61858db233b359", description = "Postman collection")
 )
 public class Application {
