@@ -18,9 +18,14 @@ servers:
   description: Development environment
 - url: https://money-transfer-service.herokuapp.com/api/1.0
   description: Staging environment
+tags:
+- name: Transactions
+- name: Accounts
 paths:
   /transfers:
     post:
+      tags:
+        - Transactions
       summary: Transfer
       description: This endpoint processes transfers between accounts
       operationId: performTransfer
@@ -58,6 +63,8 @@ paths:
                 message: 'Transaction already exists for referenceId:e0cbf84637264ee082a848b'
   /transactions:
     get:
+      tags:
+        - Transactions
       summary: Get Transactions
       description: This endpoint retrieves all transactions
       operationId: getAllTransactions
@@ -87,6 +94,8 @@ paths:
                      amount: 10
   /transactions/{transactionId}:
     get:
+      tags:
+        - Transactions
       summary: Get Transaction
       description: This endpoint retrieves one of transactions by ID
       operationId: getTransactionById
@@ -131,6 +140,8 @@ paths:
                 message: 'Transaction not exists for id: b56a851d-9ac7-4858-a063-ade52bb09a8f'
   /accounts:
     get:
+      tags:
+        - Accounts
       summary: Get Accounts
       description: This endpoint retrieves all accounts
       operationId: getAllAccounts
@@ -149,6 +160,8 @@ paths:
                   createdAt: '2018-11-01T17:32:28Z'
                   updatedAt: '2018-11-01T17:32:28Z'
     post:
+      tags:
+        - Accounts
       summary: Create Account
       description: This endpoint creates new account by initial parameters
       operationId: createAccount
@@ -189,6 +202,8 @@ paths:
                 message: 'Account balance should be positive or zero'
   /accounts/{accountId}:
     get:
+      tags:
+        - Accounts
       summary: Get Account
       description: This endpoint retrieves one of accounts by ID
       operationId: getAccountById
