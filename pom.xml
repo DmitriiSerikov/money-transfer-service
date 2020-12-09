@@ -9,7 +9,7 @@
         <exec.mainClass>com.github.example.Application</exec.mainClass>
         <micronaut.version>1.0.0</micronaut.version>
         <jdk.version>1.8</jdk.version>
-        <groovy.version>2.5.2</groovy.version>
+        <groovy.version>2.5.14</groovy.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <sonar.exclusions>**/dto/**/*, **/exception/*, **/Application.java</sonar.exclusions>
         <skip.unit.tests>false</skip.unit.tests>
